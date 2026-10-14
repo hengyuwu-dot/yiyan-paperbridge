@@ -1,0 +1,8 @@
+{
+  "layout_weights": "https://huggingface.co/wybxc/DocLayout-YOLO-DocStructBench-onnx",
+  "font_and_cmap_sources": "https://github.com/funstory-ai/BabelDOC-Assets",
+  "language_weights": [
+    "https://huggingface.co/Qwen/Qwen3-14B-MLX-4bit",
+    "https://huggingface.co/Qwen/Qwen3-4B-MLX-4bit"
+  ]
+}

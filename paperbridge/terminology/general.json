@@ -1,0 +1,300 @@
+{
+  "version": "2026.10.03",
+  "domain": "general",
+  "description": "人工编选的常用科研译名；列出经核对的用词来源，其他词条为工作词表，允许用户覆盖。",
+  "sources": {
+    "flux": {
+      "title": "天文学进展：类星体强引力透镜系统",
+      "url": "https://www.shao.cas.cn/twxjz/wzll/202501/202501yjlw/202504/P020250401498939002377.pdf"
+    },
+    "flux_alias": {
+      "title": "清华大学天文系：强引力透镜研究",
+      "url": "https://astro.tsinghua.edu.cn/info/1088/1818.htm"
+    },
+    "pbh": {
+      "title": "紫金山天文台：原初黑洞与诱导引力波",
+      "url": "https://pmo.cas.cn/xwdt2019/jzyg2019/202505/t20250516_7655777.html"
+    },
+    "subsolar": {
+      "title": "上海大学物理系：原初黑洞研究方向",
+      "url": "https://physics.shu.edu.cn/info/1082/9724.htm"
+    },
+    "halo": {
+      "title": "天文学进展：暗物质子晕数值搜寻方法",
+      "url": "https://www.shao.cas.cn/twxjz/wzll/201803/201504sp/202307/P020230713505053629536.pdf"
+    },
+    "kde": {
+      "title": "天文学报：基于核密度估计的分布估计方法",
+      "url": "https://www.pmo.cas.cn/xscbw/twxb/xbll/2003_2018/2016_56/2016_57_6/201612/P020161205702639414355.pdf"
+    },
+    "abc": {
+      "title": "清华大学教材：深度生成模型",
+      "url": "https://oa.ee.tsinghua.edu.cn/ouzhijian/pgm/pgm-pdf/deep_learning_ch.pdf"
+    },
+    "credible": {
+      "title": "深圳大学：自适应贝叶斯量子估计研究",
+      "url": "https://kjb.szu.edu.cn/info/1143/18823.htm"
+    },
+    "summary": {
+      "title": "中国人民大学教材：地理加权汇总统计技术",
+      "url": "https://idke.ruc.edu.cn/docs/2023-09/c63448e589684d6497598741cb2abbeb.pdf"
+    }
+  },
+  "entries": [
+    {
+      "english": "credible interval",
+      "chinese": "可信区间",
+      "variants": [
+        "credible intervals"
+      ],
+      "source_ids": [
+        "credible"
+      ],
+      "note": "贝叶斯可信区间，与频率学派置信区间区分。",
+      "atomic": true
+    },
+    {
+      "english": "posterior probability",
+      "chinese": "后验概率",
+      "variants": [
+        "posterior probabilities"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "prior probability",
+      "chinese": "先验概率",
+      "variants": [
+        "prior probabilities"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "posterior predictive distribution",
+      "chinese": "后验预测分布",
+      "variants": [
+        "posterior predictive distributions"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "likelihood function",
+      "chinese": "似然函数",
+      "variants": [
+        "likelihood functions"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "marginal likelihood",
+      "chinese": "边缘似然",
+      "variants": [],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "kernel density estimation",
+      "chinese": "核密度估计",
+      "variants": [
+        "kernel density estimate",
+        "kernel density estimates"
+      ],
+      "source_ids": [
+        "kde"
+      ],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "approximate Bayesian computation",
+      "chinese": "近似贝叶斯计算",
+      "variants": [],
+      "source_ids": [
+        "abc"
+      ],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "nuisance parameter",
+      "chinese": "干扰参数",
+      "variants": [
+        "nuisance parameters"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "selection function",
+      "chinese": "选择函数",
+      "variants": [
+        "selection functions"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "selection effect",
+      "chinese": "选择效应",
+      "variants": [
+        "selection effects"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "sample variance",
+      "chinese": "样本方差",
+      "variants": [],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "sampling variance",
+      "chinese": "抽样方差",
+      "variants": [],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "systematic bias",
+      "chinese": "系统偏差",
+      "variants": [
+        "systematic biases"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "log-normal distribution",
+      "chinese": "对数正态分布",
+      "variants": [
+        "lognormal distribution",
+        "log-normal distributions"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "power-law distribution",
+      "chinese": "幂律分布",
+      "variants": [
+        "power law distribution",
+        "power-law distributions"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "power-law slope",
+      "chinese": "幂律斜率",
+      "variants": [
+        "power law slope"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "power-law index",
+      "chinese": "幂律指数",
+      "variants": [
+        "power law index"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "uniform prior",
+      "chinese": "均匀先验",
+      "variants": [
+        "uniform priors"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "Gaussian prior",
+      "chinese": "高斯先验",
+      "variants": [
+        "Gaussian priors"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "forward modeling",
+      "chinese": "正向建模",
+      "variants": [
+        "forward modelling"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": false
+    },
+    {
+      "english": "marginalization",
+      "chinese": "边缘化",
+      "variants": [
+        "marginalisation"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": false
+    },
+    {
+      "english": "summary statistic",
+      "chinese": "汇总统计量",
+      "variants": [
+        "summary statistics"
+      ],
+      "source_ids": [
+        "summary"
+      ],
+      "note": "用于统计摘要或近似贝叶斯计算，不是文章摘要。",
+      "atomic": true
+    },
+    {
+      "english": "model realization",
+      "chinese": "模型实例",
+      "variants": [
+        "model realizations",
+        "simulation realization",
+        "simulation realizations"
+      ],
+      "source_ids": [],
+      "note": "指一次模拟生成的具体实例或样本，按上下文选择表述。",
+      "atomic": true
+    },
+    {
+      "english": "point-spread function",
+      "chinese": "点扩散函数",
+      "variants": [
+        "point spread function"
+      ],
+      "source_ids": [],
+      "note": "成像用工作译名，常用缩写 PSF；也有“点扩展函数”等译名，用户可覆盖。",
+      "atomic": true
+    }
+  ]
+}

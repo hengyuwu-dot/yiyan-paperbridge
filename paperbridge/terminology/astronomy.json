@@ -1,0 +1,545 @@
+{
+  "version": "2026.10.03",
+  "domain": "astronomy",
+  "description": "人工编选的常用科研译名；列出经核对的用词来源，其他词条为工作词表，允许用户覆盖。",
+  "sources": {
+    "flux": {
+      "title": "天文学进展：类星体强引力透镜系统",
+      "url": "https://www.shao.cas.cn/twxjz/wzll/202501/202501yjlw/202504/P020250401498939002377.pdf"
+    },
+    "flux_alias": {
+      "title": "清华大学天文系：强引力透镜研究",
+      "url": "https://astro.tsinghua.edu.cn/info/1088/1818.htm"
+    },
+    "pbh": {
+      "title": "紫金山天文台：原初黑洞与诱导引力波",
+      "url": "https://pmo.cas.cn/xwdt2019/jzyg2019/202505/t20250516_7655777.html"
+    },
+    "subsolar": {
+      "title": "上海大学物理系：原初黑洞研究方向",
+      "url": "https://physics.shu.edu.cn/info/1082/9724.htm"
+    },
+    "halo": {
+      "title": "天文学进展：暗物质子晕数值搜寻方法",
+      "url": "https://www.shao.cas.cn/twxjz/wzll/201803/201504sp/202307/P020230713505053629536.pdf"
+    },
+    "kde": {
+      "title": "天文学报：基于核密度估计的分布估计方法",
+      "url": "https://www.pmo.cas.cn/xscbw/twxb/xbll/2003_2018/2016_56/2016_57_6/201612/P020161205702639414355.pdf"
+    },
+    "astroid": {
+      "title": "台湾师范大学数学系：包络线与四角星形线",
+      "url": "https://www.sec.ntnu.edu.tw/uploads/asset/data/66d0a51d0e0b30f9db879583/1982-053-08_54-59_.pdf"
+    },
+    "radio_names": {
+      "title": "天文学进展：第十六批天文学名词的推荐译名",
+      "url": "https://www.shao.cas.cn/twxjz/wzll/200902/200902twxmc/202307/P020230720530823152064.pdf"
+    },
+    "sie": {
+      "title": "大学物理：基于坐标变换的引力透镜模拟",
+      "url": "https://dxwl.bnu.edu.cn/CN/10.16854/j.cnki.1000-0712.220382"
+    }
+  },
+  "entries": [
+    {
+      "english": "primordial black hole",
+      "chinese": "原初黑洞",
+      "variants": [
+        "primordial black holes"
+      ],
+      "source_ids": [
+        "pbh"
+      ],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "sub-solar mass",
+      "chinese": "亚太阳质量",
+      "variants": [
+        "subsolar mass",
+        "sub-solar-mass",
+        "subsolar-mass"
+      ],
+      "source_ids": [
+        "subsolar"
+      ],
+      "note": "表示质量低于一个太阳质量，不是亚恒星质量。",
+      "atomic": true
+    },
+    {
+      "english": "solar mass",
+      "chinese": "太阳质量",
+      "variants": [
+        "solar masses"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "flux ratio",
+      "chinese": "通量比",
+      "variants": [
+        "flux ratios"
+      ],
+      "source_ids": [
+        "flux",
+        "flux_alias"
+      ],
+      "note": "本词库优先用“通量比”；部分透镜文献也采用“流量比”。",
+      "atomic": true
+    },
+    {
+      "english": "flux-ratio anomaly",
+      "chinese": "通量比异常",
+      "variants": [
+        "flux-ratio anomalies",
+        "flux ratio anomaly",
+        "flux ratio anomalies"
+      ],
+      "source_ids": [
+        "flux",
+        "flux_alias"
+      ],
+      "note": "统一与 flux ratio 的译名；“流量比异常”亦见文献。",
+      "atomic": true
+    },
+    {
+      "english": "flux",
+      "chinese": "通量",
+      "variants": [
+        "fluxes"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": false
+    },
+    {
+      "english": "spectral flux density",
+      "chinese": "光谱通量密度",
+      "variants": [
+        "spectral flux densities"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "surface brightness",
+      "chinese": "面亮度",
+      "variants": [],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "narrow-line region",
+      "chinese": "窄线区",
+      "variants": [
+        "narrow line region",
+        "narrow-line regions"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "narrow emission line",
+      "chinese": "窄发射线",
+      "variants": [
+        "narrow emission lines"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "broad emission line",
+      "chinese": "宽发射线",
+      "variants": [
+        "broad emission lines"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "deflection angle",
+      "chinese": "偏折角",
+      "variants": [
+        "deflection angles"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "angular separation",
+      "chinese": "角间距",
+      "variants": [
+        "angular separations"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "angular resolution",
+      "chinese": "角分辨率",
+      "variants": [],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "image position",
+      "chinese": "像位置",
+      "variants": [
+        "image positions"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "quadruply imaged quasar",
+      "chinese": "四像类星体",
+      "variants": [
+        "quadruply imaged quasars",
+        "quadruply-imaged quasar",
+        "quadruply-imaged quasars"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "multiply imaged quasar",
+      "chinese": "多像类星体",
+      "variants": [
+        "multiply imaged quasars",
+        "multiply-imaged quasars"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "lens model",
+      "chinese": "透镜模型",
+      "variants": [
+        "lens models"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "halo substructure",
+      "chinese": "晕子结构",
+      "variants": [
+        "halo substructures"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "subhalo mass function",
+      "chinese": "次晕质量函数",
+      "variants": [
+        "subhalo mass functions",
+        "sub-halo mass function",
+        "subhalo mass-function"
+      ],
+      "source_ids": [
+        "halo"
+      ],
+      "note": "subhalo 的子晕和次晕均见文献；与软件既有“次晕”译名一致。",
+      "atomic": true
+    },
+    {
+      "english": "mass fraction",
+      "chinese": "质量分数",
+      "variants": [
+        "mass fractions"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "line of sight",
+      "chinese": "视线方向",
+      "variants": [],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "point source",
+      "chinese": "点源",
+      "variants": [
+        "point sources"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "finite-source effect",
+      "chinese": "有限源效应",
+      "variants": [
+        "finite source effect",
+        "finite-source effects"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "point-source approximation",
+      "chinese": "点源近似",
+      "variants": [
+        "point source approximation"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "mass-to-light ratio",
+      "chinese": "质光比",
+      "variants": [
+        "mass to light ratio",
+        "mass-to-light ratios"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "gravitational potential",
+      "chinese": "引力势",
+      "variants": [
+        "gravitational potentials"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "light-travel time",
+      "chinese": "光行时",
+      "variants": [
+        "light travel time"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "blackbody radiation",
+      "chinese": "黑体辐射",
+      "variants": [
+        "black-body radiation"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "detection threshold",
+      "chinese": "探测阈值",
+      "variants": [
+        "detection thresholds"
+      ],
+      "source_ids": [],
+      "note": "",
+      "atomic": true
+    },
+    {
+      "english": "lensing galaxy",
+      "chinese": "透镜星系",
+      "variants": [
+        "lensing galaxies"
+      ],
+      "source_ids": [],
+      "note": "按天文透镜语境使用。",
+      "atomic": true
+    },
+    {
+      "english": "lensing halo",
+      "chinese": "透镜晕",
+      "variants": [
+        "lensing halos",
+        "lensing haloes"
+      ],
+      "source_ids": [],
+      "note": "按天文透镜语境使用。",
+      "atomic": true
+    },
+    {
+      "english": "flux uncertainty",
+      "chinese": "通量不确定度",
+      "variants": [
+        "flux uncertainties"
+      ],
+      "source_ids": [],
+      "note": "按天文透镜语境使用。",
+      "atomic": true
+    },
+    {
+      "english": "astroid",
+      "chinese": "星形线",
+      "variants": [],
+      "source_ids": [
+        "astroid"
+      ],
+      "note": "astroid 为四角星形线；与 asteroid（小行星）不同。astroid caustic 在透镜语境译为星形线焦散。",
+      "atomic": true
+    },
+    {
+      "english": "astroid caustic",
+      "chinese": "星形线焦散",
+      "variants": [
+        "astroid caustics"
+      ],
+      "source_ids": [
+        "astroid"
+      ],
+      "note": "描述焦散曲线的形状，不能误读为小行星。",
+      "atomic": true
+    },
+    {
+      "english": "microlensing equation",
+      "chinese": "微引力透镜方程",
+      "variants": [
+        "microlensing equations"
+      ],
+      "source_ids": [],
+      "note": "方程名称不必机械补上‘效应’。",
+      "atomic": true
+    },
+    {
+      "english": "geometric-optics regime",
+      "chinese": "几何光学区",
+      "variants": [
+        "geometric optics regime",
+        "geometrical optics regime",
+        "geometrical-optics regime"
+      ],
+      "note": "用于区分波长与透镜特征尺度决定的物理区域；工作译名，不把 regime 强化为极限。",
+      "atomic": true,
+      "source_ids": []
+    },
+    {
+      "english": "wave-optics regime",
+      "chinese": "波动光学区",
+      "variants": [
+        "wave optics regime"
+      ],
+      "note": "沿用波动光学译名，保留原文给出的适用条件。",
+      "atomic": true,
+      "source_ids": []
+    },
+    {
+      "english": "light-day",
+      "chinese": "光日",
+      "variants": [
+        "light-days",
+        "light day",
+        "light days",
+        "lt-day",
+        "lt-days"
+      ],
+      "note": "光传播一天所经过的距离单位，lt 在此表示 light，不是 less than；工作词表。",
+      "atomic": true,
+      "source_ids": []
+    },
+    {
+      "english": "singular isothermal ellipsoid",
+      "chinese": "奇异等温椭球",
+      "variants": [
+        "singular-isothermal-ellipsoid",
+        "singular-isothermal-ellipsoidal",
+        "singular isothermal ellipsoidal"
+      ],
+      "source_ids": [
+        "sie"
+      ],
+      "note": "singular 指密度分布的奇异性，不能译成‘单’；具体模型定义仍须结合论文核对。",
+      "atomic": true
+    },
+    {
+      "english": "non-singular isothermal ellipsoid",
+      "chinese": "非奇异等温椭球",
+      "variants": [
+        "nonsingular isothermal ellipsoid",
+        "non-singular isothermal ellipsoidal"
+      ],
+      "source_ids": [],
+      "note": "工作词表：与奇异等温椭球模型区分。",
+      "atomic": true
+    },
+    {
+      "english": "radio-loud quasar",
+      "chinese": "射电强类星体",
+      "variants": [
+        "radio-loud quasars",
+        "radio loud quasar",
+        "radio loud quasars"
+      ],
+      "source_ids": [
+        "radio_names"
+      ],
+      "note": "radio-loud 按天文学名词推荐译名采用“射电强”；文献也有“射电噪”等旧译。",
+      "atomic": true
+    },
+    {
+      "english": "radio-quiet quasar",
+      "chinese": "射电宁静类星体",
+      "variants": [
+        "radio-quiet quasars",
+        "radio quiet quasar",
+        "radio quiet quasars"
+      ],
+      "source_ids": [
+        "radio_names"
+      ],
+      "note": "与射电强类星体相区别，仍须核对论文采用的判据。",
+      "atomic": true
+    },
+    {
+      "english": "active galactic nucleus",
+      "chinese": "活动星系核",
+      "variants": [
+        "active galactic nuclei"
+      ],
+      "source_ids": [],
+      "note": "工作词表：AGN 为常用缩写。",
+      "atomic": true
+    },
+    {
+      "english": "deflector",
+      "chinese": "透镜体",
+      "variants": [
+        "deflectors"
+      ],
+      "source_ids": [],
+      "note": "工作词表：在引力透镜语境指使光线发生引力偏折的前景天体，不是折射介质。",
+      "atomic": true
+    },
+    {
+      "english": "velocity dispersion function",
+      "chinese": "速度弥散函数",
+      "variants": [
+        "velocity-dispersion function"
+      ],
+      "source_ids": [],
+      "note": "工作词表：指速度弥散的分布函数，与光学色散区分。",
+      "atomic": true
+    }
+  ]
+}

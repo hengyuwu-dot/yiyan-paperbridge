@@ -1,0 +1,406 @@
+[
+  {
+    "file": "GoNotoKurrent-Bold.ttf",
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+    ],
+    "license_url": [
+      "https://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "GoNotoKurrent-Regular.ttf",
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+    ],
+    "license_url": [
+      "https://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "KleeOne-Regular.ttf",
+    "copyright": [
+      "Copyright 2020 The Klee Project Authors (https://github.com/fontworks-fonts/Klee)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+    ],
+    "license_url": [
+      "https://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "LXGWWenKaiGB-Regular.1.520.ttf",
+    "copyright": [
+      "Copyright 2022-2025 LXGW (https://github.com/lxgw/LxgwWenkaiGB)\nCopyright 2020 The Klee Project Authors (https://github.com/fontworks-fonts/Klee)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+    ],
+    "license_url": [
+      "https://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "LXGWWenKaiTC-Regular.1.520.ttf",
+    "copyright": [
+      "Copyright 2022-2025 LXGW (https://github.com/lxgw/LxgwWenkaiTC)\nCopyright 2020 The Klee Project Authors (https://github.com/fontworks-fonts/Klee)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org"
+    ],
+    "license_url": [
+      "https://openfontlicense.org"
+    ]
+  },
+  {
+    "file": "MaruBuri-Regular.ttf",
+    "copyright": [
+      "© NAVER Corp. © NAVER Cultural Foundation Corp."
+    ],
+    "license": [],
+    "license_url": []
+  },
+  {
+    "file": "NotoSans-Bold.ttf",
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org"
+    ],
+    "license_url": [
+      "https://openfontlicense.org"
+    ]
+  },
+  {
+    "file": "NotoSans-BoldItalic.ttf",
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org"
+    ],
+    "license_url": [
+      "https://openfontlicense.org"
+    ]
+  },
+  {
+    "file": "NotoSans-Italic.ttf",
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org"
+    ],
+    "license_url": [
+      "https://openfontlicense.org"
+    ]
+  },
+  {
+    "file": "NotoSans-Regular.ttf",
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org"
+    ],
+    "license_url": [
+      "https://openfontlicense.org"
+    ]
+  },
+  {
+    "file": "NotoSerif-Bold.ttf",
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org"
+    ],
+    "license_url": [
+      "https://openfontlicense.org"
+    ]
+  },
+  {
+    "file": "NotoSerif-BoldItalic.ttf",
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+    ],
+    "license_url": [
+      "https://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "NotoSerif-Italic.ttf",
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL"
+    ],
+    "license_url": [
+      "https://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "NotoSerif-Regular.ttf",
+    "copyright": [
+      "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)"
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org"
+    ],
+    "license_url": [
+      "https://openfontlicense.org"
+    ]
+  },
+  {
+    "file": "SourceHanSansCN-Bold.ttf",
+    "copyright": [
+      "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSansCN-Regular.ttf",
+    "copyright": [
+      "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSansHK-Bold.ttf",
+    "copyright": [
+      "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSansHK-Regular.ttf",
+    "copyright": [
+      "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSansJP-Bold.ttf",
+    "copyright": [
+      "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSansJP-Regular.ttf",
+    "copyright": [
+      "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSansKR-Bold.ttf",
+    "copyright": [
+      "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSansKR-Regular.ttf",
+    "copyright": [
+      "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSansTW-Bold.ttf",
+    "copyright": [
+      "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSansTW-Regular.ttf",
+    "copyright": [
+      "© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSerifCN-Bold.ttf",
+    "copyright": [
+      "© 2017-2024 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSerifCN-Regular.ttf",
+    "copyright": [
+      "© 2017-2024 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSerifHK-Bold.ttf",
+    "copyright": [
+      "© 2017-2024 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSerifHK-Regular.ttf",
+    "copyright": [
+      "© 2017-2024 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSerifJP-Bold.ttf",
+    "copyright": [
+      "© 2017-2024 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSerifJP-Regular.ttf",
+    "copyright": [
+      "© 2017-2024 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSerifKR-Bold.ttf",
+    "copyright": [
+      "© 2017-2024 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSerifKR-Regular.ttf",
+    "copyright": [
+      "© 2017-2024 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSerifTW-Bold.ttf",
+    "copyright": [
+      "© 2017-2024 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  },
+  {
+    "file": "SourceHanSerifTW-Regular.ttf",
+    "copyright": [
+      "© 2017-2024 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+    ],
+    "license": [
+      "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+    ],
+    "license_url": [
+      "http://scripts.sil.org/OFL"
+    ]
+  }
+]

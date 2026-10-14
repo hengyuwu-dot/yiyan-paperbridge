@@ -1,0 +1,52 @@
+/* Keep both pages visible, including in the narrow in-app browser. */
+.pdf-comparison{grid-template-columns:repeat(2,minmax(0,1fr));min-height:0}
+.pdf-column{min-width:0;min-height:0;display:flex;flex-direction:column}
+.pdf-column+div{border-left:1px solid #d8dfcf;border-top:0}
+.column-label{min-height:39px;padding:10px 12px;flex:none;flex-wrap:wrap}
+.column-label small{font-size:8px}
+.pdf-scroll{height:clamp(360px,68vh,900px);overflow:auto;overscroll-behavior:contain;padding:12px;scrollbar-gutter:stable;min-width:0}
+.pdf-scroll .paper-container{margin:0;min-height:0;max-width:none}
+.reading-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:10px;color:#718369}
+.sync-label{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.sync-label input{accent-color:var(--green)}
+.reading-controls select{border:1px solid var(--border);padding:6px;border-radius:5px;background:#fafcf6;font-size:10px;color:#496142}
+.page-jump{display:flex;align-items:center;gap:5px}
+.page-jump input{width:45px;border:1px solid var(--border);border-radius:4px;padding:5px;text-align:center;font-size:11px;color:#496142;background:white}
+.page-jump input::-webkit-inner-spin-button{appearance:none}
+.reader-focus .sidebar,.reader-focus .topbar,.reader-focus footer,.reader-focus .document-options,.reader-focus .progress-card,.reader-focus .issue-panel,.reader-focus .warnings,.reader-focus .reader-footnote{display:none!important}
+.reader-focus main{margin-left:0;width:100%;height:100dvh;min-height:0}
+.reader-focus .main-content{max-width:none;margin:0;padding:14px;min-height:0}
+.reader-focus #workspace{height:100%;display:flex;flex-direction:column;min-height:0}
+.reader-focus .document-heading{margin:0 0 10px;flex:none}
+.reader-focus .document-heading h1{font-size:15px}
+.reader-focus .document-heading p{display:none}
+.reader-focus .document-icon{width:30px;height:35px}
+.reader-focus .reader{flex:1;min-height:0;display:flex;flex-direction:column}
+.reader-focus .reader-toolbar{flex:none;padding:9px 12px;gap:8px}
+.reader-focus .pdf-comparison{flex:1;min-height:0;grid-template-rows:minmax(0,1fr)}
+.reader-focus .pdf-scroll{height:0;flex:1;min-height:0}
+.reader-focus .text-comparison{overflow:auto;min-height:0}
+.reader-focus .toast{left:50%}
+#termSearch{width:100%;background:white;border:1px solid #dae3cf;border-radius:5px;padding:9px 11px;font-size:11px;margin-bottom:10px;outline-color:var(--green)}
+.term-row{display:flex;flex-wrap:wrap;align-items:center;padding:10px 4px;gap:5px}
+.term-pair{display:flex;justify-content:space-between;gap:12px;width:100%}
+.term-pair span:first-child{font-family:Georgia,serif;overflow-wrap:anywhere}
+.term-pair span:last-child{color:#526d40;flex-shrink:0}
+.term-source{font-size:9px;color:#426b52;text-decoration:underline}
+.term-note{font-size:9px!important;line-height:1.6!important;width:100%;color:#7b8873}
+@media(max-width:800px){.column-label{min-height:57px}.column-label small{width:100%;margin-left:0}.reading-controls{gap:8px}.reader-focus .main-content{padding:10px}.reader-focus .reader-toolbar .segmented button{padding:6px 8px}.reader-focus #repairTranslate{display:none}.reader-focus .document-heading h1{font-size:13px}.reader-focus .document-heading .secondary{font-size:10px}}
+
+.pane-zoom{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:10px;font-weight:400;letter-spacing:0;text-transform:none}
+.pane-zoom select{max-width:96px;padding:4px;border:1px solid var(--border);border-radius:4px;background:white;color:#496142;font-size:10px}
+.column-label{min-height:62px;align-content:center;gap:6px}
+.column-label small{width:100%;margin-left:0}
+.batch-panel{margin-bottom:20px;background:#f7f9f2;border:1px solid var(--border);border-radius:10px;padding:15px}
+.batch-heading{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.batch-heading>div{flex:1}.batch-heading strong{font-size:14px}.batch-heading p,.batch-note{font-size:10px;color:#718369;margin:5px 0}
+.batch-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #e0e7d8;font-size:11px}
+.batch-row .batch-open{flex:1;min-width:0;text-align:left;background:none;border:0;color:#385a37;overflow-wrap:anywhere;cursor:pointer}
+.batch-row small{color:#718369;max-width:42%;overflow-wrap:anywhere}.batch-row button{font-size:10px}
+.reader-focus .batch-panel{display:none!important}
+@media(max-width:800px){.column-label{min-height:90px}.pane-zoom{width:100%;margin-left:0}.batch-heading{gap:8px}}
+.file-dragging main::after{content:'松开即可导入多篇 PDF';position:fixed;inset:14px;z-index:80;display:grid;place-items:center;background:#f7faf0ec;border:2px dashed #8daa70;border-radius:15px;color:#426b37;font-size:24px;pointer-events:none}
+.paper-container img.preview-loading{opacity:0}
