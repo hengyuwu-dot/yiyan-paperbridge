@@ -1,0 +1,44 @@
+name: Publish complete offline Mac app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/publish-offline.yml]
+permissions:
+  contents: read
+concurrency:
+  group: full-offline-release
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.repository == 'hengyuwu-dot/yiyan-paperbridge'
+    runs-on: macos-26
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      HF_HUB_DISABLE_XET: '1'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Download official runtime and exact corresponding sources
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish_offline_ci.py bootstrap
+      - name: Install locked Mac dependencies
+        run: |
+          .cache/python/bin/python3.12 -m venv .venv
+          .venv/bin/python -m pip install --no-cache-dir -r requirements.lock.txt
+      - name: Build and check relocatable app
+        run: |
+          .venv/bin/python scripts/install_layout.py
+          .venv/bin/python scripts/publish_offline_ci.py build
+      - name: Remove build-only duplicates from the ephemeral runner
+        run: rm -rf .venv .cache/python .cache/macos-build .cache/babeldoc
+      - name: Add verified pinned 14B and 4B weights and publish all parts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: '"dist/release/译研.app/Contents/Resources/Python/bin/python3.12" scripts/publish_offline_ci.py publish'
