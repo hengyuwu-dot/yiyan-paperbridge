@@ -116,7 +116,7 @@ def build():
     engine = OUTPUT / "Engine"
     if not (ROOT / "examples/sci-layout-sample.pdf").is_file():
         subprocess.run([sys.executable, str(ROOT / "scripts/make_sample.py")], check=True)
-    for name in ("paperbridge", "scripts", "desktop", "tests", "docs", "release-assets", "examples", "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md", "requirements.txt", "requirements.windows.txt"):
+    for name in ("paperbridge", "scripts", "desktop", "tests", "docs", "release-assets", "examples", "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md", "requirements.txt", "requirements.lock.txt", "requirements.windows.txt"):
         copy(ROOT / name, engine / name)
     corresponding_sources(packages, engine / 'release-assets')
     seed = ROOT / ".cache/babeldoc"
@@ -159,7 +159,7 @@ def build():
               "python_source_sha256": digest(python_source), "llama_source_sha256": digest(source)}
     (OUTPUT / "BUILD-REPORT.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     subprocess.run([str(python / "python.exe"), "-X", "utf8", "-c",
-                    "import paperbridge.app, paperbridge.full_worker; print('Embedded Windows engine imports passed')"],
+                    "import paperbridge.app, paperbridge.full_worker; from paperbridge.layout_runtime import initialize; initialize(); from babeldoc.format.pdf import high_level; print('Embedded Windows PDF pipeline imports passed')"],
                    cwd=engine, check=True)
     print("Windows application assembled: " + str(OUTPUT), flush=True)
 

@@ -1,5 +1,5 @@
 name: Build Windows desktop app
-# Generate the synthetic PDF fixture on a fresh Windows checkout.
+# Use locked PDF dependencies and generate fixtures on a fresh Windows checkout.
 on:
   workflow_dispatch:
   push:
