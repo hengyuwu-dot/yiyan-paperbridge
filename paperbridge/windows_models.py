@@ -32,6 +32,14 @@ def model_directory(profile):
 
 
 def default_profile():
+    bundle = os.environ.get("PAPERBRIDGE_WINDOWS_BUNDLE")
+    if bundle:
+        try:
+            edition = json.loads((Path(bundle) / "BUILD-REPORT.json").read_text(encoding="utf-8")).get("edition")
+            if edition in REQUIREMENTS and installed(model_directory(edition)):
+                return edition
+        except (OSError, ValueError, TypeError):
+            pass
     if installed(model_directory("precision")) and not installed(model_directory("standard")):
         return "precision"
     return "standard"

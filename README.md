@@ -4,9 +4,9 @@
 
 译研是一款面向 SCI 论文阅读的桌面应用，将英文科研 PDF 翻译成自然、专业的中文，把全文翻译、专业术语、中英对照和 PDF 导出放进一个简洁的论文工作室。
 
-Mac 完整离线版内置 **Qwen3-14B 4bit 精译模型**与 **Qwen3-4B 4bit 标准模型**，包含排版资源、字体与运行环境。Windows 提供 **4B 完整离线版**与 **14B 完整离线版**，分别内置对应模型，安装后即可在本机翻译。
+Mac 完整离线版内置 **Qwen3-14B 4bit 精译模型**与 **Qwen3-4B 4bit 标准模型**，包含排版资源、字体与运行环境。Windows 提供 **一键安装向导**：选择 4B 或 14B 后自动下载安装完整环境，安装完成即可离线翻译。
 
-**[下载完整 Mac 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b) · [Windows 4B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-4b-offline) · [Windows 14B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-14b-offline)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
+**[下载完整 Mac 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b) · [Windows 一键安装](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
 
 ![译研 Mac 论文工作室](docs/images/workspace.jpg)
 
@@ -76,15 +76,17 @@ progenitor = 前身星
 light curve = 光变曲线
 ```
 
-## Windows 版：4B / 14B 自选
+## Windows 版：选好模型，一键安装
 
 ![Windows 论文工作室](docs/images/windows-workspace.png)
 
-[Windows 4B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-4b-offline) · [Windows 14B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-14b-offline) · [安装与使用教程](docs/WINDOWS_INSTALL.md)
+**[下载 Windows 一键安装器](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)** · [安装与使用教程](docs/WINDOWS_INSTALL.md)
 
-下载适合电脑的 **4B 标准完整版**或 **14B 精译完整版**。两版均内置对应模型、运行环境、阅读组件、字体和排版资源，安装后即可离线翻译，并自动选中内置模型。支持 CPU 与 NVIDIA CUDA 推理，显示电脑内存和显存。
+1. 双击打开 **Yiyan-Windows-OneClick-Setup.exe**。
+2. 选择 **4B 标准版**或 **14B 精译版**，点击 **下载并安装**。
+3. 等待向导完成，打开译研，导入论文即可离线翻译。
 
-在对应下载页下载 `...-Setup.exe` 和全部 `...-Setup-*.bin`，放入同一个文件夹，双击 `Setup.exe` 即可安装。安装器自动读取分卷，无需手工合并。两版均已在 Windows 完成安装、首次启动及禁止外网访问的 PDF 翻译与导出验证。
+向导自动下载、校验并安装模型、阅读组件、字体与排版环境；支持暂停、断点续传和网络中断自动重试，默认在安装成功后清理下载缓存。首次下载安装需要联网，之后的翻译在本机离线运行。
 
 | 配置 | 4B 标准 | 14B 精译 |
 | --- | --- | --- |
@@ -93,10 +95,12 @@ light curve = 光变曲线
 | NVIDIA 显存最低 / 建议 | **6GB / 8GB+** | **12GB / 16GB+** |
 | 模型大小 | 约 2.50GB | 约 9.00GB |
 | 完整安装文件下载 | **约 4.07GB** | **约 10.49GB** |
-| 需要下载的安装文件 | **1 个 Setup.exe + 3 个 .bin** | **1 个 Setup.exe + 6 个 .bin** |
+| 用户下载安装入口 | **同一个一键安装器，选择 4B** | **同一个一键安装器，选择 14B** |
 | 安装使用预留空间 | 15GB | 30GB |
 
 两种模型都支持 CPU，显存要求用于完整 GPU 加速。配置按 Q4_K_M、8192 上下文、单任务预留开销；同时安装两种模型留 40GB 空间。更多选择方法见 Windows 教程。
+
+需要为离线电脑准备安装文件时，也可下载 [4B 完整离线包](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-4b-offline)或 [14B 完整离线包](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-14b-offline)。
 
 ## 开源与许可
 

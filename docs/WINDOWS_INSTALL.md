@@ -1,8 +1,8 @@
 # 译研 Windows 安装与使用教程
 
-译研把 SCI 英文论文翻译成专业中文，支持原文／译文左右对照、同步翻阅、专业词表与 PDF 导出。Windows 提供 **4B 标准完整版**和 **14B 精译完整版**，分别内置对应模型；安装后导入论文即可离线翻译。
+译研把 SCI 英文论文翻译成专业中文，支持原文／译文左右对照、同步翻阅、专业词表与 PDF 导出。下载一个 **Windows 一键安装器**，选择 **4B 标准版**或 **14B 精译版**，向导自动下载、校验并安装完整环境。安装后导入论文即可离线翻译。
 
-[下载 4B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-4b-offline) · [下载 14B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-14b-offline) · [返回软件首页](../README.md)
+**[下载 Windows 一键安装器](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)** · [返回软件首页](../README.md)
 
 ![Windows 论文工作室](images/windows-workspace.png)
 
@@ -18,7 +18,7 @@
 | CPU 运行 | 支持，使用上面的电脑内存配置 | 支持，使用上面的电脑内存配置 |
 | 内置模型大小 | **约 2.50GB** | **约 9.00GB** |
 | 完整安装文件下载大小 | **约 4.07GB** | **约 10.49GB** |
-| 完整安装所需文件 | **Setup.exe + 3 个 .bin** | **Setup.exe + 6 个 .bin** |
+| 用户下载安装入口 | 同一个一键安装器，选择 4B | 同一个一键安装器，选择 14B |
 | 安装及使用预留磁盘空间 | **15GB** | **30GB** |
 
 同时安装两个模型建议预留 **40GB** 磁盘空间。应用及论文也需要空间，模型文件大小和运行内存是不同的数字。
@@ -31,20 +31,20 @@
 
 NVIDIA 加速组件使用 CUDA 12.4，建议安装 **551.61 或更新版本的 NVIDIA 驱动**；应用内附所需推理运行库。依据：[NVIDIA CUDA 12.4 驱动说明](https://docs.nvidia.com/cuda/archive/12.4.0/cuda-toolkit-release-notes/index.html)。
 
-## 2. 下载并安装完整版
+## 2. 一键下载安装
 
-1. 按配置表选择 **4B 完整版**或 **14B 完整版**，打开对应下载页，展开 **Assets**。
-2. 下载该版本的 **`...-Setup.exe` 和所有 `...-Setup-*.bin`**：4B 共 3 个 `.bin`，14B 共 6 个 `.bin`；放在同一个文件夹，保留原文件名。
-3. 双击 **`...-Setup.exe`**，选择位置，按提示安装。安装器自动读取全部分卷，准备本地组件。
-4. 从桌面或开始菜单打开 **译研**，显示“本地模型已就绪”，即可导入论文。
+1. 下载上面的 **`Yiyan-Windows-OneClick-Setup.exe`**，双击打开。
+2. 选择 **4B 标准版**或 **14B 精译版**；按需更改安装位置。
+3. 点击 **下载并安装**。向导会自动获取完整安装文件、核对 SHA256，并安装模型、运行环境、阅读组件、字体与排版资源。
+4. 显示“安装完成”后打开 **译研**，导入论文即可离线翻译。
 
-两个完整版分别包含 Qwen3-4B 或 Qwen3-14B、Python、CPU / CUDA 推理、WebView2 固定阅读组件、字体与全文排版资源。下载安装文件后，安装、首次启动和翻译都可离线完成。GitHub 对单个附件有大小限制，因此安装数据以 `.bin` 分卷发布；用户无需手工合并。全部文件下载完成后再运行安装器。
+下载时可以点击 **暂停下载**，之后点击继续或重新打开向导，都能接着下载。网络暂时中断时向导会自动重试。默认勾选 **装好后清理下载缓存**与 **安装完成后打开译研**。
 
-安装器默认安装到当前用户的应用目录。若系统需要 Visual C++ 运行库，安装过程中会调用内置的 Microsoft 官方安装器，按 Windows 提示允许安装即可。
+首次下载安装需要联网。安装完成后，全文翻译、中英对照与 PDF 导出在本机离线运行。Windows 如果提示需要安装运行库，按系统提示允许内置的 Microsoft 官方组件安装即可。
 
-两个完整版均已在 Windows 完成实际安装、使用内置阅读组件的首次启动，以及禁止外网访问的本地模型 PDF 翻译和中文／双语导出验证。版本、SHA256 和运行记录见对应下载页的验证文件。
+### 为完全离线的电脑准备安装文件
 
-安装完成后，可以删除下载的 `Setup.exe`、全部 `.bin` 以及校验文件，释放下载目录的空间。保留应用安装目录即可正常使用。
+也可以选择 [4B 完整离线包](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-4b-offline)或 [14B 完整离线包](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-14b-offline)。在对应页面下载 `Setup.exe` 及全部 `.bin`，放在同一个文件夹后运行安装程序；4B 共 3 个数据分卷，14B 共 6 个数据分卷。全部文件备好后可以拷贝到离线电脑上安装。
 
 ## 3. 内置模型与切换
 

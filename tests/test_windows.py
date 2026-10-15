@@ -25,6 +25,14 @@ def test_bundled_models_are_read_in_place_and_select_the_available_edition(tmp_p
     assert models.model_directory("precision") == bundled
     assert models.default_profile() == "precision"
     assert not (tmp_path / "personal").exists()
+    standard = tmp_path / "app/Models/qwen3-4b"
+    standard.mkdir()
+    (standard / entry["file"]).write_bytes(content)
+    download.activate(standard, entry)
+    (tmp_path / "app/BUILD-REPORT.json").write_text(json.dumps({"edition": "precision"}))
+    assert models.default_profile() == "precision"
+    (tmp_path / "app/BUILD-REPORT.json").write_text(json.dumps({"edition": "standard"}))
+    assert models.default_profile() == "standard"
     # A truncated bundle must never hide a usable personal model directory.
     (bundled / entry["file"]).write_bytes(b"GGUF")
     assert models.model_directory("precision") == tmp_path / "personal/models/qwen3-14b"

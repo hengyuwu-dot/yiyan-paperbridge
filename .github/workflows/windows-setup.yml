@@ -1,0 +1,147 @@
+name: Build and verify Windows one-click setup
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/windows-setup.yml]
+permissions:
+  contents: read
+concurrency:
+  group: windows-oneclick-setup
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+      - name: Verify interruption, resume, checksum and manifest contracts
+        run: dotnet run --project desktop/windows-setup-tests/Tests.csproj -c Release
+      - name: Build one self-contained Windows executable
+        run: dotnet publish desktop/windows-setup/Setup.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o dist/windows-setup
+      - name: Capture real Windows model-selection screens
+        shell: pwsh
+        run: |
+          $process = Start-Process dist/windows-setup/Yiyan-Windows-OneClick-Setup.exe -ArgumentList '--preview-smoke C:\PaperBridgeSetupPreview' -PassThru
+          if (-not $process.WaitForExit(120000)) { $process.Kill($true); throw 'Setup preview timed out' }
+          if ($process.ExitCode -ne 0 -or -not (Test-Path C:\PaperBridgeSetupPreview\windows-setup-14b.png)) { throw 'Setup selection screens failed' }
+      - uses: actions/upload-artifact@v6
+        with:
+          name: Windows-oneclick-setup
+          path: dist/windows-setup/Yiyan-Windows-OneClick-Setup.exe
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: Windows-oneclick-preview
+          path: C:/PaperBridgeSetupPreview/*.png
+          if-no-files-found: warn
+  validate:
+    needs: build
+    runs-on: windows-2022
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: standard
+            label: 4B
+          - profile: precision
+            label: 14B
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/download-artifact@v6
+        with:
+          name: Windows-oneclick-setup
+          path: dist/windows-setup
+      - name: Run the actual GUI download-and-install button
+        shell: pwsh
+        run: |
+          $process = Start-Process dist/windows-setup/Yiyan-Windows-OneClick-Setup.exe -ArgumentList '--install-smoke ${{ matrix.profile }} --evidence C:\PaperBridgeSetupEvidence --destination "C:\PaperBridge OneClick\译研" --cache C:\PaperBridgeSetupCache' -PassThru
+          $deadline = (Get-Date).AddMinutes(60)
+          while (-not $process.WaitForExit(30000)) {
+            if (Test-Path C:\PaperBridgeSetupEvidence\setup-progress.json) { Get-Content C:\PaperBridgeSetupEvidence\setup-progress.json }
+            $log = 'C:\PaperBridgeSetupCache\1.6.0\${{ matrix.profile }}\installation.log'
+            if (Test-Path $log) { Get-Content $log -Tail 3 }
+            if ((Get-Date) -gt $deadline) { $process.Kill($true); throw 'One-click setup exceeded its test time limit' }
+          }
+          if ($process.ExitCode -ne 0) { Get-Content C:\PaperBridgeSetupEvidence\setup-error.log; throw 'One-click installation failed' }
+          $report = Get-Content C:\PaperBridgeSetupEvidence\SETUP-REPORT.json -Raw | ConvertFrom-Json
+          if ($report.status -ne 'complete' -or -not $report.all_files_verified -or -not $report.cache_cleaned -or $report.profile -ne '${{ matrix.profile }}') { throw 'One-click setup report did not pass' }
+      - name: Verify the installed model equals the pinned official weights
+        run: dotnet run --project desktop/windows-setup-tests/Tests.csproj -c Release -- --verify-installed 'C:\PaperBridge OneClick\译研' ${{ matrix.profile }}
+      - name: Deny external app traffic and verify first offline launch
+        shell: pwsh
+        run: |
+          foreach ($exe in @('Yiyan.exe','Runtime/Python/python.exe','Runtime/llama/cpu/llama-server.exe','Runtime/llama/cuda/llama-server.exe','Runtime/WebView2/msedgewebview2.exe')) {
+            New-NetFirewallRule -DisplayName "PaperBridge one-click offline $exe" -Direction Outbound -Action Block -Program (Join-Path 'C:\PaperBridge OneClick\译研' $exe) | Out-Null
+          }
+          $env:PAPERBRIDGE_HOME = 'C:\PaperBridgeSetupEvidence\AppData'
+          $process = Start-Process 'C:\PaperBridge OneClick\译研\Yiyan.exe' -ArgumentList '--smoke-test' -PassThru
+          if (-not $process.WaitForExit(300000)) { $process.Kill($true); throw 'Offline app startup timed out' }
+          if ($process.ExitCode -ne 0) { throw 'Installed offline application failed' }
+          $ui = Get-Content "$env:PAPERBRIDGE_HOME/windows-ui-smoke.json" -Raw | ConvertFrom-Json
+          if (-not $ui.loaded -or -not $ui.bundled_browser -or -not $ui.status.layout_installed -or $ui.status.default_profile -ne '${{ matrix.profile }}') { throw 'Offline resources or selected model missing' }
+          Copy-Item "$env:PAPERBRIDGE_HOME/windows-ui-smoke.*" C:\PaperBridgeSetupEvidence\
+          $report = Get-Content C:\PaperBridgeSetupEvidence\SETUP-REPORT.json -Raw | ConvertFrom-Json
+          $report | Add-Member -NotePropertyName offline_first_launch_verified -NotePropertyValue $true
+          $report | Add-Member -NotePropertyName installed_model_sha256_verified -NotePropertyValue $true
+          $report | ConvertTo-Json | Set-Content 'C:\PaperBridgeSetupEvidence\WINDOWS-ONECLICK-${{ matrix.label }}-REPORT.json' -Encoding utf8
+      - name: Verify offline PDF export from the installed Chinese path
+        if: matrix.profile == 'standard'
+        run: python scripts/smoke_windows_offline.py standard --bundle 'C:\PaperBridge OneClick\译研' --data C:\PaperBridgeSetupEvidence\PDF
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: Windows-oneclick-validation-${{ matrix.label }}
+          path: |
+            C:/PaperBridgeSetupEvidence/*.json
+            C:/PaperBridgeSetupEvidence/*.png
+            C:/PaperBridgeSetupEvidence/*.log
+            C:/PaperBridgeSetupEvidence/AppData/desktop-error.log
+            C:/PaperBridgeSetupEvidence/PDF/WINDOWS-OFFLINE-SMOKE-REPORT.json
+            C:/PaperBridgeSetupEvidence/PDF/smoke.log
+            C:/PaperBridgeSetupCache/1.6.0/${{ matrix.profile }}/installation.log
+          if-no-files-found: warn
+  publish:
+    needs: [build, validate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v6
+        with:
+          name: Windows-oneclick-setup
+          path: dist/release
+      - uses: actions/download-artifact@v6
+        with:
+          name: Windows-oneclick-preview
+          path: dist/release
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: Windows-oneclick-validation-*
+          path: validation
+      - name: Publish the verified single-file installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          find validation -name 'WINDOWS-ONECLICK-*-REPORT.json' -exec cp {} dist/release/ \;
+          cp docs/WINDOWS_INSTALL.md dist/release/
+          cd dist/release
+          sha256sum * > SHA256SUMS.txt
+          gh release create v1.7.0-windows-setup --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title '译研 · Windows 一键安装 · 4B / 14B 自选' --notes-file ../../docs/RELEASE_v1.7.0_WINDOWS_SETUP.md --latest=false --draft
+          gh release upload v1.7.0-windows-setup --repo "$GITHUB_REPOSITORY" ./*
+          gh release edit v1.7.0-windows-setup --repo "$GITHUB_REPOSITORY" --draft=false --latest=false

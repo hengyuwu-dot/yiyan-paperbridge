@@ -1,0 +1,90 @@
+[
+  {
+    "profile": "standard",
+    "label": "4B 标准版",
+    "diskBudget": 15000000000,
+    "installedBudget": 8000000000,
+    "modelFile": "Qwen3-4B-Q4_K_M.gguf",
+    "modelBytes": 2497280256,
+    "modelSha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+    "files": [
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-4B-Setup-1.bin",
+        "bytes": 1796522496,
+        "sha256": "296c9114c148da0ad4c7587d287ba446ba7a6a0954aa823081ae7cd4c08c6ace",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-4b-offline/Yiyan-1.6.0-Windows-x64-Offline-4B-Setup-1.bin"
+      },
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-4B-Setup-2.bin",
+        "bytes": 1800000000,
+        "sha256": "f995f11d139813d22f55da980b9191d6750c3f781b72b8772ae53d690ccbe89e",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-4b-offline/Yiyan-1.6.0-Windows-x64-Offline-4B-Setup-2.bin"
+      },
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-4B-Setup-3.bin",
+        "bytes": 467389987,
+        "sha256": "92425ef7049bf9bbf66eb073a386861e3804aac48fc2abb59479eb2a9a4456ca",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-4b-offline/Yiyan-1.6.0-Windows-x64-Offline-4B-Setup-3.bin"
+      },
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-4B-Setup.exe",
+        "bytes": 3477204,
+        "sha256": "9fd24c1c7c66c84920bc48cd8f396f73e7e172b3f70a3eec2dc909146f917a04",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-4b-offline/Yiyan-1.6.0-Windows-x64-Offline-4B-Setup.exe"
+      }
+    ]
+  },
+  {
+    "profile": "precision",
+    "label": "14B 精译版",
+    "diskBudget": 30000000000,
+    "installedBudget": 16000000000,
+    "modelFile": "Qwen3-14B-Q4_K_M.gguf",
+    "modelBytes": 9001752960,
+    "modelSha256": "500a8806e85ee9c83f3ae08420295592451379b4f8cf2d0f41c15dffeb6b81f0",
+    "files": [
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-1.bin",
+        "bytes": 1796522496,
+        "sha256": "b0ae032aecfd5b02dc4633edb1cb6351f6c15730dcd9d2caeb5eff52ea613306",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-14b-offline/Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-1.bin"
+      },
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-2.bin",
+        "bytes": 1800000000,
+        "sha256": "86a22c8addd9b0d460a9308353907fabc383bdf8e044d9be7d8675e43a22c5b0",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-14b-offline/Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-2.bin"
+      },
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-3.bin",
+        "bytes": 1800000000,
+        "sha256": "44d31f83a5815f01a66c03a98fa9a0fa4973606a004279de18b4947d5f81ea3a",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-14b-offline/Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-3.bin"
+      },
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-4.bin",
+        "bytes": 1800000000,
+        "sha256": "e8157e528e083f12f2e87fd5f968cd58600beca47dde7c73b700d8c9585dc30f",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-14b-offline/Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-4.bin"
+      },
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-5.bin",
+        "bytes": 1800000000,
+        "sha256": "7bc559638efc1608e97d779211bc288d4d99c82f45062cd64b30d1578bebbc05",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-14b-offline/Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-5.bin"
+      },
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-6.bin",
+        "bytes": 1492691608,
+        "sha256": "aea21832cfbc155484405e1ba2352704ad7747a66cd4cfa77cba94ba631df870",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-14b-offline/Yiyan-1.6.0-Windows-x64-Offline-14B-Setup-6.bin"
+      },
+      {
+        "name": "Yiyan-1.6.0-Windows-x64-Offline-14B-Setup.exe",
+        "bytes": 3477232,
+        "sha256": "1cbd3191684b626d97a4f20d4fcb69ed5151e162e07931100f72840bdd7fc3bc",
+        "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.6.0-windows-14b-offline/Yiyan-1.6.0-Windows-x64-Offline-14B-Setup.exe"
+      }
+    ]
+  }
+]

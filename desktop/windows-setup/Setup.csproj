@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Yiyan-Windows-OneClick-Setup</AssemblyName>
+    <Version>1.7.0</Version>
+    <Product>译研一键安装</Product>
+    <ApplicationIcon>../windows/AppIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="packages.json" LogicalName="PaperBridgeSetup.packages.json" />
+    <EmbeddedResource Include="UiFont.ttf" LogicalName="PaperBridgeSetup.UiFont.ttf" />
+    <EmbeddedResource Include="LICENSES.txt" LogicalName="PaperBridgeSetup.LICENSES.txt" />
+    <EmbeddedResource Include="../../LICENSE" LogicalName="PaperBridgeSetup.AGPl.txt" />
+    <EmbeddedResource Include="base-module.json" LogicalName="PaperBridgeSetup.base-module.json" />
+    <EmbeddedResource Include="../../paperbridge/windows_models.py" LogicalName="PaperBridgeSetup.windows_models.py" />
+  </ItemGroup>
+</Project>
