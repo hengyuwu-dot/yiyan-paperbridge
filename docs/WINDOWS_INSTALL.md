@@ -40,6 +40,8 @@ NVIDIA 加速组件使用 CUDA 12.4，建议安装 **551.61 或更新版本的 N
 
 阅读窗口使用 Microsoft Edge WebView2。Windows 11 通常已有该组件；若软件提示需要准备阅读组件，前往 [Microsoft 官方 WebView2 下载页](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) 安装 **Evergreen Standalone Installer（x64）**，完成后再打开译研。[Microsoft 运行时说明](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution)。
 
+推理组件还使用 Microsoft Visual C++ v14 x64 运行库。若打开模型时提示缺少 `MSVCP140.dll` 或 `VCRUNTIME140.dll`，安装 [Microsoft 官方 x64 运行库](https://aka.ms/vc14/vc_redist.x64.exe) 后重新打开译研。[Microsoft 运行库说明](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)。
+
 ## 3. 首次选择 4B 或 14B
 
 1. 点击右上角 **准备本地模型**。

@@ -4,9 +4,9 @@
 
 译研是一款面向 SCI 论文阅读的桌面应用，将英文科研 PDF 翻译成自然、专业的中文，把全文翻译、专业术语、中英对照和 PDF 导出放进一个简洁的论文工作室。
 
-内置 **Qwen3-14B 4bit 精译模型**与 **Qwen3-4B 4bit 标准模型**，在你的 Mac 上完成翻译。完整离线版包含模型、排版资源、字体与运行环境，安装后即可开始阅读。
+Mac 完整离线版内置 **Qwen3-14B 4bit 精译模型**与 **Qwen3-4B 4bit 标准模型**，包含排版资源、字体与运行环境。Windows 版提供 **4B / 14B 自选下载**，在本机完成翻译。
 
-**[下载完整 Mac 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
+**[下载完整 Mac 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b) · [下载 Windows 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.5.0-windows)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
 
 ![译研 Mac 论文工作室](docs/images/workspace.jpg)
 
