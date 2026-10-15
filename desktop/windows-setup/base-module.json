@@ -1,4 +1,12 @@
 {
-  "path": "Engine/paperbridge/windows_models.py",
-  "before_sha256": "69a442c98a218ea97e3c2d666ecbff531253853411b2404c7f3e96e759ab75db"
+  "modules": [
+    {
+      "file": "windows_models.py",
+      "before_sha256": "69a442c98a218ea97e3c2d666ecbff531253853411b2404c7f3e96e759ab75db"
+    },
+    {
+      "file": "desktop_server.py",
+      "before_sha256": "31829e1dd7ab21f0f76738e151f72dd204322a3ad3ada79caf67e0ad3762bbaf"
+    }
+  ]
 }

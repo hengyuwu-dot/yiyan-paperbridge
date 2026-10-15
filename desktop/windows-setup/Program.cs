@@ -71,8 +71,8 @@ internal sealed class SetupWindow : Form
         foreach (int h in new[] { 76, 132, 36, 66, 44, 98, 62, 34 }) root.RowStyles.Add(new RowStyle(SizeType.Absolute, h));
         Controls.Add(root);
         var header = new Panel { Dock = DockStyle.Fill };
-        header.Controls.Add(new Label { Text = "选择模型，接下来交给译研。", Location = new Point(0, 43), AutoSize = true, ForeColor = Color.DimGray });
-        header.Controls.Add(new Label { Text = "译研 · 一键安装", Font = MakeFont(23), ForeColor = green, AutoSize = true });
+        header.Controls.Add(new Label { Text = "选择模型，接下来交给译研。", Location = new Point(0, 44), Size = new Size(750, 28), AutoSize = false, ForeColor = Color.DimGray });
+        header.Controls.Add(new Label { Text = "译研 · 一键安装", Font = MakeFont(23), ForeColor = green, Size = new Size(750, 46), AutoSize = false });
         root.Controls.Add(header, 0, 0);
         var choices = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1 };
         choices.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50)); choices.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
@@ -109,13 +109,13 @@ internal sealed class SetupWindow : Form
         Shown += async (_, _) => {
             if (preview is not null)
             {
-                standard.Checked = true; await Task.Delay(300); Capture(preview, "windows-setup-4b.png");
-                precision.Checked = true; await Task.Delay(300); Capture(preview, "windows-setup-14b.png"); Close();
+                standard.Checked = true; await Task.Delay(300); CaptureWindow(preview, "windows-setup-4b.png");
+                precision.Checked = true; await Task.Delay(300); CaptureWindow(preview, "windows-setup-14b.png"); Close();
             }
             else if (smokeProfile is not null)
             {
                 precision.Checked = smokeProfile == "precision"; standard.Checked = !precision.Checked; openApp.Checked = false;
-                await Task.Delay(300); Capture(evidence!, "setup-selected.png"); start.PerformClick();
+                await Task.Delay(300); CaptureWindow(evidence!, "setup-selected.png"); start.PerformClick();
             }
         };
     }
@@ -132,7 +132,7 @@ internal sealed class SetupWindow : Form
 
     void RefreshChoice() { if (!standard.Checked && !precision.Checked) return; installed = false; if (!working) start.Text = "下载并安装 " + (precision.Checked ? "14B" : "4B"); }
     void EnableChoices(bool enabled) { standard.Parent!.Enabled = precision.Parent!.Enabled = enabled; standard.Enabled = precision.Enabled = destination.Enabled = browse.Enabled = clearCache.Enabled = openApp.Enabled = enabled; }
-    void Capture(string folder, string name) { Directory.CreateDirectory(folder); using var bitmap = new Bitmap(Width, Height); DrawToBitmap(bitmap, new Rectangle(0, 0, Width, Height)); bitmap.Save(Path.Combine(folder, name), System.Drawing.Imaging.ImageFormat.Png); }
+    void CaptureWindow(string folder, string name) { Directory.CreateDirectory(folder); using var bitmap = new Bitmap(Width, Height); DrawToBitmap(bitmap, new Rectangle(0, 0, Width, Height)); bitmap.Save(Path.Combine(folder, name), System.Drawing.Imaging.ImageFormat.Png); }
     void WriteState(object state)
     {
         if (evidence is null) return;
@@ -213,7 +213,7 @@ internal sealed class SetupWindow : Form
                 files_verified = edition.Files.Length, download_bytes = edition.TotalBytes, automatic_install = true,
                 cache_cleaned = cleaned, destination = target, elapsed_seconds = Math.Round(elapsed.Elapsed.TotalSeconds, 1) };
             WriteState(report);
-            if (evidence is not null) { File.WriteAllText(Path.Combine(evidence, "SETUP-REPORT.json"), JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true })); Capture(evidence, "setup-complete.png"); }
+            if (evidence is not null) { File.WriteAllText(Path.Combine(evidence, "SETUP-REPORT.json"), JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true })); CaptureWindow(evidence, "setup-complete.png"); }
             if (openApp.Checked && installerExit == 0) LaunchApp();
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { status.Text = "下载已暂停"; detail.Text = "进度已保存，点击继续即可接着下载。"; start.Text = "继续下载并安装"; WriteState(new { status = "paused", profile = edition.Profile }); }
@@ -221,7 +221,7 @@ internal sealed class SetupWindow : Form
         {
             status.Text = "暂时未能完成安装"; detail.Text = error is UnauthorizedAccessException ? "所选位置无法写入，请更换安装文件夹。" : error.Message;
             start.Text = "继续下载并安装"; log.AppendLine(error.ToString()); WriteState(new { status = "error", profile = edition.Profile, message = error.Message });
-            if (evidence is not null) { Directory.CreateDirectory(evidence); File.WriteAllText(Path.Combine(evidence, "setup-error.log"), error.ToString()); Capture(evidence, "setup-error.png"); Environment.ExitCode = 1; }
+            if (evidence is not null) { Directory.CreateDirectory(evidence); File.WriteAllText(Path.Combine(evidence, "setup-error.log"), error.ToString()); CaptureWindow(evidence, "setup-error.png"); Environment.ExitCode = 1; }
         }
         finally
         {
@@ -238,15 +238,20 @@ internal sealed class SetupWindow : Form
         var assembly = typeof(SetupWindow).Assembly;
         using var marker = assembly.GetManifestResourceStream("PaperBridgeSetup.base-module.json")!;
         using var metadata = JsonDocument.Parse(marker);
-        string path = Path.Combine(target, "Engine", "paperbridge", "windows_models.py");
-        string original = File.ReadAllText(path, Encoding.UTF8).Replace("\r\n", "\n");
-        string digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(original))).ToLowerInvariant();
-        using var source = assembly.GetManifestResourceStream("PaperBridgeSetup.windows_models.py")!;
-        using var reader = new StreamReader(source); string replacement = reader.ReadToEnd().Replace("\r\n", "\n");
-        string replacementHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(replacement))).ToLowerInvariant();
-        if (digest != metadata.RootElement.GetProperty("before_sha256").GetString() && digest != replacementHash)
-            throw new IOException("安装组件版本与校验清单不符，请重试。");
-        File.WriteAllText(path + ".new", replacement, new UTF8Encoding(false)); File.Move(path + ".new", path, true);
+        foreach (var module in metadata.RootElement.GetProperty("modules").EnumerateArray())
+        {
+            string file = module.GetProperty("file").GetString()!;
+            if (file is not ("windows_models.py" or "desktop_server.py")) throw new IOException("安装组件清单无效。");
+            string path = Path.Combine(target, "Engine", "paperbridge", file);
+            string original = File.ReadAllText(path, Encoding.UTF8).Replace("\r\n", "\n");
+            string digest = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(original))).ToLowerInvariant();
+            using var source = assembly.GetManifestResourceStream("PaperBridgeSetup." + file)!;
+            using var reader = new StreamReader(source); string replacement = reader.ReadToEnd().Replace("\r\n", "\n");
+            string replacementHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(replacement))).ToLowerInvariant();
+            if (digest != module.GetProperty("before_sha256").GetString() && digest != replacementHash)
+                throw new IOException("安装组件版本与校验清单不符，请重试。");
+            File.WriteAllText(path + ".new", replacement, new UTF8Encoding(false)); File.Move(path + ".new", path, true);
+        }
     }
     void ShowLicenses()
     {

@@ -141,6 +141,14 @@ def stop_application_workers():
 
 
 class DesktopServer(uvicorn.Server):
+    ready_callback = None
+
+    async def startup(self, sockets=None):
+        await super().startup(sockets=sockets)
+        # Advertise the endpoint only after imports and ASGI startup finish.
+        if self.started and self.ready_callback is not None:
+            self.ready_callback()
+
     @contextmanager
     def capture_signals(self):
         # Uvicorn normally re-raises SIGTERM after serving, which bypasses our
@@ -179,7 +187,7 @@ def main(argv=None):
             server.should_exit = True
             stop_application_workers()
 
-        write_state(arguments.state_file, state)
+        server.ready_callback = lambda: write_state(arguments.state_file, state)
         watcher = threading.Thread(target=watch_parent, args=(identity, finished, parent_exited),
                                    name="paperbridge-desktop-parent", daemon=True)
         watcher.start()

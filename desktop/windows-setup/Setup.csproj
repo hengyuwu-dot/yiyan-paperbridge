@@ -16,6 +16,7 @@
     <EmbeddedResource Include="LICENSES.txt" LogicalName="PaperBridgeSetup.LICENSES.txt" />
     <EmbeddedResource Include="../../LICENSE" LogicalName="PaperBridgeSetup.AGPl.txt" />
     <EmbeddedResource Include="base-module.json" LogicalName="PaperBridgeSetup.base-module.json" />
+    <EmbeddedResource Include="../../paperbridge/desktop_server.py" LogicalName="PaperBridgeSetup.desktop_server.py" />
     <EmbeddedResource Include="../../paperbridge/windows_models.py" LogicalName="PaperBridgeSetup.windows_models.py" />
   </ItemGroup>
 </Project>

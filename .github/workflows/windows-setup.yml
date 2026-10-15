@@ -1,4 +1,5 @@
 name: Build and verify Windows one-click setup
+# Wait for native service readiness before advertising its local endpoint.
 on:
   workflow_dispatch:
   push:

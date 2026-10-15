@@ -258,3 +258,16 @@ def test_cancelled_upload_keeps_analysis_protected_and_retrieves_late_failure(mo
         assert not warnings
 
     asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("ready", [True, False])
+def test_desktop_endpoint_advertised_only_after_server_ready(monkeypatch, ready):
+    calls = []
+    async def startup(server, sockets=None):
+        assert not calls
+        server.started = ready
+    monkeypatch.setattr(desktop.uvicorn.Server, "startup", startup)
+    server = desktop.DesktopServer(desktop.uvicorn.Config("paperbridge.app:app"))
+    server.ready_callback = lambda: calls.append(server.started)
+    asyncio.run(server.startup())
+    assert calls == ([True] if ready else [])
