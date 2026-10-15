@@ -170,7 +170,8 @@ def storage_inventory(root, data, *, refresh=False):
     root, data = Path(root), Path(data)
     bundled = os.environ.get("PAPERBRIDGE_BUNDLE_RESOURCES")
     bundle = Path(bundled) if bundled else None
-    key = str(root.absolute()), str(data.absolute()), bundled
+    windows_bundle = os.environ.get("PAPERBRIDGE_WINDOWS_BUNDLE")
+    key = str(root.absolute()), str(data.absolute()), bundled, windows_bundle
     with _scan_lock:
         if refresh or _snapshot is None or _snapshot_key != key or time.time() - _snapshot["measured_at"] >= 60:
             groups = {key: {"id": key, "name": name, "bytes": 0, "logical_bytes": 0, "files": 0} for key, name in GROUPS.items()}
@@ -203,6 +204,19 @@ def storage_inventory(root, data, *, refresh=False):
                     row["bytes"] += getattr(info, "st_blocks", (info.st_size + 511) // 512) * 512
                     row["logical_bytes"] += info.st_size
                     row["files"] += 1
+            if windows_bundle:
+                installed = Path(windows_bundle)
+                if (installed / "Yiyan.exe").is_file() and (installed / "Runtime/Python/python.exe").is_file():
+                    for path, info in file_stats(installed, errors):
+                        inode = info.st_dev, info.st_ino
+                        if inode in seen:
+                            continue
+                        seen.add(inode)
+                        category = "runtime" if path.is_relative_to(installed / "Runtime") else "layout" if path.is_relative_to(installed / "Engine/.cache/babeldoc") else "other"
+                        row = groups[category]
+                        row["bytes"] += getattr(info, "st_blocks", (info.st_size + 511) // 512) * 512
+                        row["logical_bytes"] += info.st_size
+                        row["files"] += 1
             _snapshot = {"software_bytes": sum(r["bytes"] for r in groups.values()), "groups": list(groups.values()),
                          "measured_at": time.time(), "errors": errors, "partial": bool(errors)}
             _snapshot_key = key

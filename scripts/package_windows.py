@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import importlib.metadata as metadata
 import os
 from pathlib import Path
 import shutil
@@ -56,6 +57,47 @@ def copy(source, destination):
         shutil.copy2(source, destination)
 
 
+def corresponding_sources(packages, assets):
+    notices = assets / "windows-licenses"
+    rows = []
+    distributions = {d.metadata['Name'].lower(): d for d in metadata.distributions(path=[str(packages)])}
+    for name, dist in sorted(distributions.items()):
+        found = []
+        for entry in dist.files or []:
+            relative = Path(entry)
+            if '..' in relative.parts or not any(p.lower().startswith(('license', 'copying', 'notice', 'copyright')) for p in relative.parts):
+                continue
+            source = Path(dist.locate_file(entry))
+            if source.is_file():
+                copy(source, notices / f'{name}-{dist.version}' / relative)
+                found.append(relative.as_posix())
+        rows.append({'name': name, 'version': dist.version, 'license_files': found})
+    sources = assets / "vendor-sources"
+    sources.mkdir(parents=True, exist_ok=True)
+    records = []
+    for name in ('babeldoc', 'pymupdf', 'levenshtein'):
+        dist = distributions[name]
+        with urllib.request.urlopen(f'https://pypi.org/pypi/{name}/{dist.version}/json', timeout=60) as response:
+            info = json.load(response)
+        source = next(f for f in info['urls'] if f['packagetype'] == 'sdist')
+        target = sources / source['filename']
+        download(source['url'], target, source['digests']['sha256'])
+        records.append({'name': name, 'version': dist.version, 'url': source['url'], 'sha256': digest(target)})
+    import pymupdf
+    version = pymupdf.VersionFitz
+    mupdf = sources / f'mupdf-{version}-source.tar.gz'
+    url = f'https://mupdf.com/downloads/archive/mupdf-{version}-source.tar.gz'
+    download(url, mupdf)
+    import tarfile
+    with tarfile.open(mupdf) as archive:
+        if not any(m.name.endswith('/source/fitz/context.c') for m in archive.getmembers()):
+            raise RuntimeError('Incomplete MuPDF corresponding source')
+    records.append({'name': 'MuPDF', 'version': version, 'url': url, 'sha256': digest(mupdf)})
+    notices.mkdir(parents=True, exist_ok=True)
+    (notices / 'DEPENDENCIES.json').write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding='utf-8')
+    (sources / 'WINDOWS-SOURCES.json').write_text(json.dumps(records, indent=2), encoding='utf-8')
+
+
 def build():
     if sys.platform != "win32":
         raise RuntimeError("Build this app on Windows x64")
@@ -72,6 +114,7 @@ def build():
     engine = OUTPUT / "Engine"
     for name in ("paperbridge", "scripts", "desktop", "tests", "docs", "release-assets", "examples", "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md", "requirements.txt", "requirements.windows.txt"):
         copy(ROOT / name, engine / name)
+    corresponding_sources(packages, engine / 'release-assets')
     seed = ROOT / ".cache/babeldoc"
     if not (seed / "ready.json").is_file():
         raise RuntimeError("Install layout assets before packaging")

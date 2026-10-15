@@ -68,6 +68,7 @@ internal sealed class PaperWindow : Form
             foreach (string arg in new[] { "-X", "utf8", "-m", "paperbridge.windows_bootstrap", "--parent-pid", Environment.ProcessId.ToString(), "--state-file", stateFile }) start.ArgumentList.Add(arg);
             start.Environment["PAPERBRIDGE_HOME"] = data;
             start.Environment["PAPERBRIDGE_LLAMA_DIR"] = Path.Combine(root, "Runtime", "llama");
+            start.Environment["PAPERBRIDGE_WINDOWS_BUNDLE"] = root;
             start.Environment["PYTHONUTF8"] = "1";
             server = new Process { StartInfo = start };
             server.OutputDataReceived += (_, e) => { if (e.Data != null) lock (log) log.AppendLine(e.Data); };
@@ -120,6 +121,10 @@ internal sealed class PaperWindow : Form
                     await Task.Delay(1500);
                     using var capture = File.Create(Path.Combine(data, "windows-ui-smoke.png"));
                     await view.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, capture);
+                    await view.CoreWebView2.ExecuteScriptAsync("document.getElementById('modelBadge').click()");
+                    await Task.Delay(800);
+                    using var modelCapture = File.Create(Path.Combine(data, "windows-models-smoke.png"));
+                    await view.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, modelCapture);
                     await File.WriteAllTextAsync(Path.Combine(data, "windows-ui-smoke.json"), JsonSerializer.Serialize(new { loaded = true, engine = "WebView2", origin }));
                     closing = true; StopServer(); Close();
                 }

@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import textwrap
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -52,7 +53,7 @@ shutil.copy2(folder/'translated.pdf',ROOT/'Windows-smoke-translated.pdf')
 shutil.copy2(folder/'bilingual.pdf',ROOT/'Windows-smoke-bilingual.pdf')
 '''
     script = data / "run.py"
-    script.write_text(code, encoding="utf-8")
+    script.write_text("def main():\n" + textwrap.indent(code.strip(), "    ") + "\n\nif __name__ == '__main__':\n    main()\n", encoding="utf-8")
     with (data / "smoke.log").open("w", encoding="utf-8") as log:
         result = subprocess.run([str(python), "-X", "utf8", str(script)], env=environment,
                                 cwd=bundle / "Engine", stdout=log, stderr=log, timeout=1800)

@@ -46,7 +46,7 @@ jobs:
           if ($process.ExitCode -ne 0) { throw 'Desktop startup failed' }
           $report = Join-Path $env:LOCALAPPDATA 'PaperBridge/windows-ui-smoke.json'
           if (-not (Test-Path $report)) { throw 'Missing desktop smoke report' }
-          Copy-Item (Join-Path $env:LOCALAPPDATA 'PaperBridge/windows-ui-smoke.*') .cache/windows-build/
+          Copy-Item (Join-Path $env:LOCALAPPDATA 'PaperBridge/windows-*-smoke.*') .cache/windows-build/
       - name: Translate and export a real PDF using the packaged 4B engine
         run: python scripts/smoke_windows.py
       - name: Package portable app and installer
@@ -63,7 +63,7 @@ jobs:
         with:
           name: Windows-validation
           path: |
-            .cache/windows-build/windows-ui-smoke.*
+            .cache/windows-build/windows-*-smoke.*
             .cache/windows-smoke/WINDOWS-SMOKE-REPORT.json
             .cache/windows-smoke/Windows-smoke-*.pdf
             .cache/windows-smoke/smoke.log
