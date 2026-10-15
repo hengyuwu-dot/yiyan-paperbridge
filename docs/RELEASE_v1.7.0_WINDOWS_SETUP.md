@@ -2,9 +2,11 @@
 
 **只下载一个安装向导，选择 4B 或 14B，点击“下载并安装”，其余步骤自动完成。**
 
+**[下载 Windows 一键安装器（约 72 MB）](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)**
+
 ## 开始使用
 
-1. 在下方 Assets 下载 **`Yiyan-Windows-OneClick-Setup.exe`**。
+1. 点击上方链接下载 **`Yiyan-Windows-OneClick-Setup.exe`**。
 2. 双击打开，选择 **4B 标准版**或 **14B 精译版**。
 3. 点击 **下载并安装**，等待向导完成。
 4. 打开译研，导入论文即可离线翻译。
