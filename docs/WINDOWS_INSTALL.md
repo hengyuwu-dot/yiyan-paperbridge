@@ -1,8 +1,8 @@
 # 译研 Windows 安装与使用教程
 
-译研把 SCI 英文论文翻译成专业中文，支持原文／译文左右对照、同步翻阅、专业词表与 PDF 导出。Windows 版提供 **4B 标准**和 **14B 精译**两种本地模型，可分别下载，也可以同时安装。
+译研把 SCI 英文论文翻译成专业中文，支持原文／译文左右对照、同步翻阅、专业词表与 PDF 导出。Windows 提供 **4B 标准完整版**和 **14B 精译完整版**，分别内置对应模型；安装后导入论文即可离线翻译。
 
-[下载 Windows 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.5.0-windows) · [返回软件首页](../README.md)
+[下载 4B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-4b-offline) · [下载 14B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-14b-offline) · [返回软件首页](../README.md)
 
 ![Windows 论文工作室](images/windows-workspace.png)
 
@@ -29,29 +29,26 @@
 
 NVIDIA 加速组件使用 CUDA 12.4，建议安装 **551.61 或更新版本的 NVIDIA 驱动**；应用内附所需推理运行库。依据：[NVIDIA CUDA 12.4 驱动说明](https://docs.nvidia.com/cuda/archive/12.4.0/cuda-toolkit-release-notes/index.html)。
 
-## 2. 下载并安装
+## 2. 下载并安装完整版
 
-1. 打开上面的 Windows 下载页面，展开 **Assets**。
-2. 下载 **`Yiyan-1.5.0-Windows-x64-Setup.exe`**。
-3. 双击安装，选择安装位置，按提示完成。
-4. 从桌面或开始菜单打开 **译研**。
+1. 按配置表选择 **4B 完整版**或 **14B 完整版**，打开对应下载页，展开 **Assets**。
+2. 下载该版本的 **`...-Setup.exe` 和所有 `...-Setup-*.bin`**，放在同一个文件夹，保留原文件名。
+3. 双击 **`...-Setup.exe`**，选择位置，按提示安装。安装器自动读取全部分卷，准备本地组件。
+4. 从桌面或开始菜单打开 **译研**，显示“本地模型已就绪”，即可导入论文。
 
-安装器默认安装到当前用户的应用目录，并创建桌面和开始菜单入口。
+两个完整版分别包含 Qwen3-4B 或 Qwen3-14B、Python、CPU / CUDA 推理、WebView2 固定阅读组件、字体与全文排版资源。下载安装文件后，安装、首次启动和翻译都可离线完成。GitHub 对单个附件有大小限制，因此安装数据以 `.bin` 分卷发布；用户无需手工合并。全部文件下载完成后再运行安装器。
 
-如果使用免安装版，下载 **`Yiyan-1.5.0-Windows-x64.zip`**，在资源管理器中选择“全部解压”，打开解压后的 `Yiyan` 文件夹，双击 **`Yiyan.exe`**。升级免安装版时，把新版本解压到另一个文件夹后打开即可。
+安装器默认安装到当前用户的应用目录。若系统需要 Visual C++ 运行库，安装过程中会调用内置的 Microsoft 官方安装器，按 Windows 提示允许安装即可。
 
-阅读窗口使用 Microsoft Edge WebView2。Windows 11 通常已有该组件；若软件提示需要准备阅读组件，前往 [Microsoft 官方 WebView2 下载页](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) 安装 **Evergreen Standalone Installer（x64）**，完成后再打开译研。[Microsoft 运行时说明](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution)。
+安装完成后，可以删除下载的 `Setup.exe`、全部 `.bin` 以及校验文件，释放下载目录的空间。保留应用安装目录即可正常使用。
 
-推理组件还使用 Microsoft Visual C++ v14 x64 运行库。若打开模型时提示缺少 `MSVCP140.dll` 或 `VCRUNTIME140.dll`，安装 [Microsoft 官方 x64 运行库](https://aka.ms/vc14/vc_redist.x64.exe) 后重新打开译研。[Microsoft 运行库说明](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)。
+## 3. 内置模型与切换
 
-## 3. 首次选择 4B 或 14B
+4B 完整版默认选中 **标准 · 4B**；14B 完整版默认选中 **精译 · 14B**。模型直接从应用目录的 `Models` 读取，首次启动不会复制第二份。
 
-1. 点击右上角 **准备本地模型**。
-2. 在模型窗口查看本机内存、NVIDIA 显存以及两种模式的配置表。
-3. 点击 **下载 4B 标准模型（约 2.50GB）**，或 **下载 14B 精译模型（约 9.00GB）**。
-4. 等待下载和完整性校验完成，显示“本地模型已就绪”后导入论文。
+如果想增加另一种模型，可在模型窗口查看本机配置并点击对应下载按钮，或安装另一完整版。按需增加模型需要联网，完成后可离线使用。已经导入的论文与译稿保留在个人数据目录。
 
-首次下载需要联网获取 Qwen 官方模型；下载完成后的翻译在本机运行。已安装一种模型后，可以随时再下载另一种。下载中断时再次点击下载，可继续获取剩余内容。
+需要较小的首次下载时，也可选择 [1.5 按需下载版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.5.0-windows)：安装后在模型窗口下载 4B 或 14B，再进行离线翻译。
 
 ## 4. 翻译论文并切换模型
 
@@ -69,7 +66,7 @@ NVIDIA 加速组件使用 CUDA 12.4，建议安装 **551.61 或更新版本的 N
 - 在右上角 **内存 / 存储** 中查看占用，选择清理临时文件、旧自动备份、下载缓存或日志。
 - 开启 **完成后自动清理**，任务完成后整理临时资源；推理进程结束后释放内存和显存。
 
-论文、译稿、模型和设置保存在 **`%LOCALAPPDATA%\PaperBridge`**；应用文件与个人数据分开存放。
+论文、译稿、按需下载的模型和设置保存在 **`%LOCALAPPDATA%\PaperBridge`**；完整版内置模型保存在应用安装目录的 **`Models`**。个人数据与应用文件分开存放。
 
 ## 常见操作
 

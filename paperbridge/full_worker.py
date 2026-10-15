@@ -181,6 +181,9 @@ def run(job_id, replay=False, layout_test=False, repair=False, missing_only=Fals
         image_boxes = {n + 1: [fitz.Rect(image["bbox"]) for image in page.get_image_info()]
                        for n, page in enumerate(original)}
     model_dir = ROOT / "models" / ("qwen3-14b" if settings.get("profile") == "precision" else "qwen3-4b")
+    if WINDOWS:
+        from .windows_models import model_directory
+        model_dir = model_directory(settings.get("profile", "standard"))
     local = LocalTranslator(model_dir, folder / "translation-failures")
     if not replay and not layout_test and not local.installed():
         raise RuntimeError("选定的本地模型尚未准备完毕")

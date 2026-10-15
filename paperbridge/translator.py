@@ -14,6 +14,9 @@ from .paths import ROOT, WINDOWS
 MODEL_ID = "Qwen/Qwen3-4B-GGUF" if WINDOWS else "Qwen/Qwen3-4B-MLX-4bit"
 MODEL_REVISION = "main"  # Installer records the downloaded snapshot SHA.
 MODEL_DIR = ROOT / "models" / "qwen3-4b"
+if WINDOWS:
+    from .windows_models import model_directory
+    MODEL_DIR = model_directory("standard")
 os.environ.setdefault("HF_HOME", str(ROOT / ".cache" / "huggingface"))
 os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")

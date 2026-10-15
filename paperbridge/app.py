@@ -36,6 +36,9 @@ from .review import reading_segments, issue_notes, completion_message
 from .paths import CODE_ROOT, WINDOWS, hidden_process
 
 PRECISION_DIR = ROOT / "models" / "qwen3-14b"
+if WINDOWS:
+    from .windows_models import model_directory
+    PRECISION_DIR = model_directory("precision")
 
 DATA = ROOT / "data" / "jobs"
 DATA.mkdir(parents=True, exist_ok=True)
@@ -145,8 +148,11 @@ def status():
             "domains": [{"id": k, "name": v["name"]} for k, v in DOMAINS.items()]}
     result["platform"] = "windows" if WINDOWS else "macos"
     if WINDOWS:
-        from .windows_models import hardware
+        from .windows_models import hardware, default_profile
         result["hardware"] = hardware()
+        result["default_profile"] = default_profile()
+        result["bundled_models"] = [p for p in ("standard", "precision")
+                                    if model_directory(p).parent.name == "Models"]
     return result
 
 

@@ -21,7 +21,20 @@ def manifest():
 
 
 def model_directory(profile):
-    return ROOT / "models" / ("qwen3-14b" if profile == "precision" else "qwen3-4b")
+    name = "qwen3-14b" if profile == "precision" else "qwen3-4b"
+    # Complete editions read immutable weights in place, without a second copy.
+    bundle = os.environ.get("PAPERBRIDGE_WINDOWS_BUNDLE")
+    if bundle:
+        bundled = Path(bundle) / "Models" / name
+        if installed(bundled):
+            return bundled
+    return ROOT / "models" / name
+
+
+def default_profile():
+    if installed(model_directory("precision")) and not installed(model_directory("standard")):
+        return "precision"
+    return "standard"
 
 
 def profile_for(directory):

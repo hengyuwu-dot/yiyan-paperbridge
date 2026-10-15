@@ -10,6 +10,27 @@ from paperbridge import windows_download as download
 from paperbridge.gguf_inference import GGUFInference, LOCAL_PORTS, block_external_network
 
 
+def test_bundled_models_are_read_in_place_and_select_the_available_edition(tmp_path, monkeypatch):
+    import hashlib
+    content = b"GGUFoffline-test"
+    entry = {"repo": "Qwen/test", "revision": "fixed", "file": "test.gguf", "bytes": len(content),
+             "sha256": hashlib.sha256(content).hexdigest()}
+    monkeypatch.setattr(models, "manifest", lambda: {"standard": entry, "precision": entry})
+    monkeypatch.setattr(models, "ROOT", tmp_path / "personal")
+    monkeypatch.setenv("PAPERBRIDGE_WINDOWS_BUNDLE", str(tmp_path / "app"))
+    bundled = tmp_path / "app/Models/qwen3-14b"
+    bundled.mkdir(parents=True)
+    (bundled / entry["file"]).write_bytes(content)
+    download.activate(bundled, entry)
+    assert models.model_directory("precision") == bundled
+    assert models.default_profile() == "precision"
+    assert not (tmp_path / "personal").exists()
+    # A truncated bundle must never hide a usable personal model directory.
+    (bundled / entry["file"]).write_bytes(b"GGUF")
+    assert models.model_directory("precision") == tmp_path / "personal/models/qwen3-14b"
+    assert models.default_profile() == "standard"
+
+
 def test_choice_uses_free_vram_and_single_gpu_not_added_capacities():
     gpu = lambda free: {"name": "GPU", "free_vram_bytes": free * 1024**3, "index": 0}
     assert models.engine_choice("precision", {"nvidia_gpus": [gpu(8), gpu(8)]}) == ("cpu", None)

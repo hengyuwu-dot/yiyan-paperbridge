@@ -168,11 +168,11 @@ async function modelStatus() {
     const windows = currentStatus.platform === 'windows';
     $('windowsRequirements').hidden = !windows;
     if (windows) {
-      $('modelIntro').textContent = '选择适合电脑的本地模型：4B 标准约 2.50GB，14B 精译约 9.00GB。首次下载模型后即可离线翻译。软件优先使用显存充足的 NVIDIA 显卡，也可以使用 CPU。';
+      $('modelIntro').textContent = currentStatus.bundled_models?.length ? '完整离线版已内置模型、字体与排版资源，导入论文即可翻译。软件优先使用显存充足的 NVIDIA 显卡，也可以使用 CPU。' : '选择适合电脑的本地模型：4B 标准约 2.50GB，14B 精译约 9.00GB。首次下载模型后即可离线翻译。软件优先使用显存充足的 NVIDIA 显卡，也可以使用 CPU。';
       const h = currentStatus.hardware;
       const gpu = h?.nvidia_gpus?.map(g => `${g.name} · ${(g.vram_bytes / 1024**3).toFixed(1)}GB 显存`).join('；');
       $('hardwareSummary').textContent = h ? `这台电脑：${(h.ram_bytes / 1024**3).toFixed(0)}GB 内存 · ${gpu || 'CPU 运行'}` : '正在读取电脑配置';
-      if (!job && !currentStatus.precision_installed) $('profile').value = 'standard';
+      if (!job) $('profile').value = currentStatus.default_profile || 'standard';
       $('prepareFull').textContent = '下载 14B 精译模型（约 9.00GB）';
       settingsSummary();
     }
@@ -364,7 +364,7 @@ async function openJob(document, newDocument = false) {
   const revision = ++viewRevision; openingRequest++; closeModal('documentTermsModal');
   job = document; page = PaperUI.readingPage(localStorage,job.id,job.page_count); targetedSegment = null; pageSegments = []; $('segmentFilter').value = 'all'; $('segmentSearch').value = ''; $('issuePanel').hidden = true; $('issuePanel').open = false; $('issueList').replaceChildren(); $('segmentList').replaceChildren(); $('downloadMenu').hidden = true; setSidebar(false); drawRecent();
   $('translationOptions').open = !job.has_output;
-  $('welcome').hidden = true; $('workspace').hidden = false; $('domain').value = job.settings.domain || 'general'; $('engine').value = job.settings.engine || (job.translated ? 'conservative' : 'full'); $('profile').value = job.settings.profile || (currentStatus.platform === 'windows' || job.translated ? 'standard' : 'precision'); $('pages').value = job.settings.pages || ''; $('polish').checked = job.settings.polish !== false; terms = PaperReader.documentTerms(job.settings, localStorage.getItem('paperbridge.terms') || '', newDocument); $('customTerms').value = terms; history.replaceState(null, '', `/?job=${job.id}`);
+  $('welcome').hidden = true; $('workspace').hidden = false; $('domain').value = job.settings.domain || 'general'; $('engine').value = job.settings.engine || (job.translated ? 'conservative' : 'full'); $('profile').value = job.settings.profile || (currentStatus.platform === 'windows' ? currentStatus.default_profile || 'standard' : job.translated ? 'standard' : 'precision'); $('pages').value = job.settings.pages || ''; $('polish').checked = job.settings.polish !== false; terms = PaperReader.documentTerms(job.settings, localStorage.getItem('paperbridge.terms') || '', newDocument); $('customTerms').value = terms; history.replaceState(null, '', `/?job=${job.id}`);
   $('autoCleanup').checked = job.settings.auto_cleanup !== false;
   settingsSummary(); drawJob(); await updatePage(); if(viewRevision === revision) await updateIssues();
 }

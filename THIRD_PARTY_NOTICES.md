@@ -12,6 +12,9 @@
 | MLX / MLX LM | MIT | https://github.com/ml-explore/mlx / https://github.com/ml-explore/mlx-lm |
 | Python 3.12 | PSF 及随源代码附带的组件许可 | https://www.python.org/ |
 | Qwen3 模型 | Apache-2.0 | https://huggingface.co/Qwen |
+| llama.cpp（Windows CPU / CUDA） | MIT 及随二进制附带的运行库许可 | https://github.com/ggml-org/llama.cpp |
+| Microsoft .NET / WebView2 SDK | MIT / Microsoft 随组件附带的许可 | https://github.com/dotnet/runtime / https://www.nuget.org/packages/Microsoft.Web.WebView2 |
+| Microsoft WebView2 固定运行时 / Visual C++ Redistributable | Microsoft 运行时分发条款，保留官方文件与许可 | https://learn.microsoft.com/microsoft-edge/webview2/concepts/distribution / https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist |
 
 完整安装依赖、版本、元数据与随包许可由 `scripts/prepare_release_licenses.py` 收集，保存在 `release-assets/licenses/` 和 `DEPENDENCIES.json`。
 运行时不修改 CPython 源码；打包时只重定位文件、移除基础发行版中不需要的额外 Python 包，并加入本应用所需依赖。原始第三方许可、声明及组件内置许可文件保留。
@@ -27,3 +30,5 @@
 - 商业销售或闭源分发需要另行评估依赖授权；尤其不能把 AGPL 依赖简单改标为 MIT。
 
 许可规则参考：[PyMuPDF 官方许可](https://pymupdf.io/licensing)、[BabelDOC 许可](https://github.com/funstory-ai/BabelDOC/blob/v0.6.4/LICENSE)。
+
+Windows 完整离线版按固定版本读取 Qwen 官方 GGUF 权重，随模型提供上游 LICENSE 与 README。基础 Python、PDF 依赖及其对应源码沿用校验过的 1.5.0 Windows 运行包，新增应用源码随包更新。Microsoft WebView2 固定运行时从官方分发地址获取，校验实际执行文件的 Microsoft 签名，完整保留运行时目录；Visual C++ 官方安装器原样附带。构建记录包含模型、基础运行包和 Microsoft 组件的 SHA256、版本及签名主体。

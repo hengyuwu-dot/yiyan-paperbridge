@@ -1,0 +1,119 @@
+name: Build complete offline Windows editions
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/windows-offline.yml]
+permissions:
+  contents: read
+concurrency:
+  group: windows-offline-editions
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 110
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: standard
+            label: 4B
+          - profile: precision
+            label: 14B
+    permissions:
+      contents: write
+    env:
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      HF_HUB_DISABLE_XET: '1'
+      PAPERBRIDGE_WINDOWS_OUTPUT: C:\PaperBridgeBuild\Yiyan
+      PAPERBRIDGE_WINDOWS_CACHE: C:\PaperBridgeCache
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12.10'
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+      - name: Check build volume capacity
+        shell: pwsh
+        run: |
+          Get-PSDrive C, D
+          if ((Get-PSDrive C).Free -lt 30GB) { throw 'Offline build needs 30 GB free on the system volume' }
+      - name: Assemble complete edition with pinned model and fixed reading runtime
+        run: python scripts/package_windows_offline.py ${{ matrix.profile }}
+      - name: Compile disk-spanning offline installer
+        shell: pwsh
+        run: |
+          $compiler = "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe"
+          if (-not (Test-Path $compiler)) { choco install innosetup --no-progress -y }
+          & "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe" /DModelLabel=${{ matrix.label }} /DAppSource=C:\PaperBridgeBuild\Yiyan /DReleaseOutput=C:\PaperBridgeRelease desktop/windows/installer-offline.iss
+          if ($LASTEXITCODE -ne 0) { throw 'Offline installer compilation failed' }
+          # Reclaim the assembly before testing the actual installer output.
+          Remove-Item C:\PaperBridgeBuild -Recurse -Force
+      - name: Install the published distribution and deny external app traffic
+        shell: pwsh
+        run: |
+          $setup = Get-Item 'C:/PaperBridgeRelease/*-Setup.exe'
+          $install = Start-Process $setup.FullName -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR=C:\PaperBridgeInstalled /LOG=C:\PaperBridgeCache\installation.log' -PassThru -Wait
+          if ($install.ExitCode -ne 0) { throw "Installer exit $($install.ExitCode)" }
+          $executables = @('Yiyan.exe','Runtime/Python/python.exe','Runtime/llama/cpu/llama-server.exe','Runtime/llama/cuda/llama-server.exe','Runtime/WebView2/msedgewebview2.exe')
+          foreach ($exe in $executables) {
+            $program = Join-Path C:\PaperBridgeInstalled $exe
+            New-NetFirewallRule -DisplayName "PaperBridge offline $exe" -Direction Outbound -Action Block -Program $program | Out-Null
+          }
+      - name: Verify first launch with bundled model and bundled WebView2
+        shell: pwsh
+        run: |
+          $env:PAPERBRIDGE_HOME = 'C:\PaperBridgeCache\ui-first-launch'
+          $process = Start-Process C:\PaperBridgeInstalled\Yiyan.exe -ArgumentList '--smoke-test' -PassThru
+          if (-not $process.WaitForExit(300000)) { $process.Kill($true); throw 'Desktop smoke timed out' }
+          if ($process.ExitCode -ne 0) { throw 'Offline desktop failed to start' }
+          $report = Get-Content "$env:PAPERBRIDGE_HOME/windows-ui-smoke.json" -Raw | ConvertFrom-Json
+          if (-not $report.loaded -or -not $report.bundled_browser -or -not $report.status.layout_installed -or $report.status.default_profile -ne '${{ matrix.profile }}') { throw 'Offline first launch check failed' }
+          Copy-Item "$env:PAPERBRIDGE_HOME/windows-*-smoke.*" C:\PaperBridgeCache\
+      - name: Translate and export PDF with all app downloads forbidden
+        run: python scripts/smoke_windows_offline.py ${{ matrix.profile }} --bundle C:\PaperBridgeInstalled --data C:\PaperBridgeCache\pdf-offline
+      - name: Save native Windows evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Windows-offline-validation-${{ matrix.label }}
+          path: |
+            C:/PaperBridgeCache/BUILD-REPORT.json
+            C:/PaperBridgeCache/windows-*-smoke.*
+            C:/PaperBridgeCache/installation.log
+            C:/PaperBridgeCache/ui-first-launch/desktop-error.log
+            C:/PaperBridgeCache/pdf-offline/WINDOWS-OFFLINE-SMOKE-REPORT.json
+            C:/PaperBridgeCache/pdf-offline/Windows-offline-*.pdf
+            C:/PaperBridgeCache/pdf-offline/smoke.log
+          if-no-files-found: warn
+      - name: Publish complete offline edition
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = 'v1.6.0-windows-${{ matrix.label }}-offline'.ToLower()
+          $folder = 'C:\PaperBridgeRelease'
+          Copy-Item C:\PaperBridgeCache\BUILD-REPORT.json $folder
+          Copy-Item C:\PaperBridgeCache\pdf-offline\WINDOWS-OFFLINE-SMOKE-REPORT.json $folder
+          Copy-Item C:\PaperBridgeCache\windows-ui-smoke.png $folder
+          Copy-Item C:\PaperBridgeCache\windows-ui-smoke.json $folder
+          Copy-Item docs\WINDOWS_INSTALL.md $folder
+          $lines = foreach ($file in (Get-ChildItem $folder -File | Sort-Object Name)) {
+            if ($file.Length -ge 2000000000) { throw 'Release asset exceeds GitHub budget' }
+            "$((Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLower())  $($file.Name)"
+          }
+          $lines | Set-Content "$folder/SHA256SUMS.txt" -Encoding utf8
+          gh release create $tag --target $env:GITHUB_SHA --title '译研 1.6 · Windows ${{ matrix.label }} 完整离线版' --notes-file docs/RELEASE_v1.6.0_WINDOWS_OFFLINE.md --latest=false --draft
+          if ($LASTEXITCODE -ne 0) { throw 'Could not create offline release' }
+          $files = Get-ChildItem $folder -File | ForEach-Object FullName
+          gh release upload $tag @files
+          if ($LASTEXITCODE -ne 0) { throw 'Could not upload complete offline files' }
+          gh release edit $tag --draft=false --latest=false
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish offline release' }

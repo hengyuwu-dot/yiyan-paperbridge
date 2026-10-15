@@ -20,7 +20,7 @@ internal sealed class PaperWindow : Form
     readonly WebView2 view = new() { Dock = DockStyle.Fill };
     readonly Label loading = new() { Text = "正在准备论文工作室…", Dock = DockStyle.Fill,
         TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Microsoft YaHei UI", 16) };
-    readonly string data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PaperBridge");
+    readonly string data = Environment.GetEnvironmentVariable("PAPERBRIDGE_HOME") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PaperBridge");
     readonly HttpClient http = new(new HttpClientHandler { UseProxy = false }) { Timeout = TimeSpan.FromSeconds(3) };
     readonly StringBuilder log = new();
     readonly bool smoke;
@@ -57,11 +57,12 @@ internal sealed class PaperWindow : Form
     {
         try
         {
-            _ = CoreWebView2Environment.GetAvailableBrowserVersionString();
+            string root = AppContext.BaseDirectory;
+            string? browserFolder = File.Exists(Path.Combine(root, "Runtime", "WebView2", "msedgewebview2.exe")) ? Path.Combine(root, "Runtime", "WebView2") : null;
+            _ = CoreWebView2Environment.GetAvailableBrowserVersionString(browserFolder);
             Directory.CreateDirectory(data);
             stateFile = Path.Combine(data, "tmp", "desktop-" + Guid.NewGuid().ToString("N") + ".json");
             Directory.CreateDirectory(Path.GetDirectoryName(stateFile)!);
-            string root = AppContext.BaseDirectory;
             var start = new ProcessStartInfo(Path.Combine(root, "Runtime", "Python", "python.exe")) {
                 WorkingDirectory = Path.Combine(root, "Engine"), UseShellExecute = false, CreateNoWindow = true,
                 RedirectStandardOutput = true, RedirectStandardError = true, StandardOutputEncoding = Encoding.UTF8, StandardErrorEncoding = Encoding.UTF8 };
@@ -96,7 +97,7 @@ internal sealed class PaperWindow : Form
                 await Task.Delay(200);
             }
             if (origin.Length == 0) throw new Exception("启动等待超时，请关闭后重新打开译研。");
-            var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: Path.Combine(data, "WebView2"));
+            var environment = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: browserFolder, userDataFolder: Path.Combine(data, "WebView2"));
             await view.EnsureCoreWebView2Async(environment);
             view.CoreWebView2.Settings.UserAgent += " PaperBridgeDesktop/1.5 Windows";
             view.CoreWebView2.Settings.AreDevToolsEnabled = false;
@@ -125,7 +126,8 @@ internal sealed class PaperWindow : Form
                     await Task.Delay(800);
                     using var modelCapture = File.Create(Path.Combine(data, "windows-models-smoke.png"));
                     await view.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, modelCapture);
-                    await File.WriteAllTextAsync(Path.Combine(data, "windows-ui-smoke.json"), JsonSerializer.Serialize(new { loaded = true, engine = "WebView2", origin }));
+                    var status = JsonDocument.Parse(await http.GetStringAsync(origin + "/api/status"));
+                    await File.WriteAllTextAsync(Path.Combine(data, "windows-ui-smoke.json"), JsonSerializer.Serialize(new { loaded = true, engine = "WebView2", bundled_browser = browserFolder != null, origin, status = status.RootElement.Clone() }));
                     closing = true; StopServer(); Close();
                 }
             };

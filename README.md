@@ -4,9 +4,9 @@
 
 译研是一款面向 SCI 论文阅读的桌面应用，将英文科研 PDF 翻译成自然、专业的中文，把全文翻译、专业术语、中英对照和 PDF 导出放进一个简洁的论文工作室。
 
-Mac 完整离线版内置 **Qwen3-14B 4bit 精译模型**与 **Qwen3-4B 4bit 标准模型**，包含排版资源、字体与运行环境。Windows 版提供 **4B / 14B 自选下载**，在本机完成翻译。
+Mac 完整离线版内置 **Qwen3-14B 4bit 精译模型**与 **Qwen3-4B 4bit 标准模型**，包含排版资源、字体与运行环境。Windows 提供 **4B 完整离线版**与 **14B 完整离线版**，分别内置对应模型，安装后即可在本机翻译。
 
-**[下载完整 Mac 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b) · [下载 Windows 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.5.0-windows)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
+**[下载完整 Mac 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b) · [Windows 4B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-4b-offline) · [Windows 14B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-14b-offline)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
 
 ![译研 Mac 论文工作室](docs/images/workspace.jpg)
 
@@ -80,9 +80,11 @@ light curve = 光变曲线
 
 ![Windows 论文工作室](docs/images/windows-workspace.png)
 
-[下载 Windows 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.5.0-windows) · [安装与使用教程](docs/WINDOWS_INSTALL.md)
+[Windows 4B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-4b-offline) · [Windows 14B 完整版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-14b-offline) · [安装与使用教程](docs/WINDOWS_INSTALL.md)
 
-Windows 版在首次打开时选择下载 4B 标准或 14B 精译模型，之后可以在每篇论文的翻译设置中切换。内置 CPU 与 NVIDIA CUDA 推理组件，并显示电脑内存和显存。
+下载适合电脑的 **4B 标准完整版**或 **14B 精译完整版**。两版均内置对应模型、运行环境、阅读组件、字体和排版资源，安装后即可离线翻译，并自动选中内置模型。支持 CPU 与 NVIDIA CUDA 推理，显示电脑内存和显存。
+
+在对应下载页下载 `...-Setup.exe` 和全部 `...-Setup-*.bin`，放入同一个文件夹，双击 `Setup.exe` 即可安装。安装器自动读取分卷，无需手工合并。
 
 | 配置 | 4B 标准 | 14B 精译 |
 | --- | --- | --- |
