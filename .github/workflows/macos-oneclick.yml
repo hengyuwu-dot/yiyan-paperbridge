@@ -1,4 +1,5 @@
 name: Build Mac one-click installer and independent updates
+# Keep normal WebKit callbacks running while verifying a clean application exit.
 on:
   workflow_dispatch:
   push:
@@ -48,6 +49,8 @@ jobs:
           .cache/python/bin/python3.12 -m venv .venv
           .venv/bin/python -m pip install --no-cache-dir -r requirements.lock.txt
           .venv/bin/python scripts/install_layout.py
+      - name: Verify native resumable downloader
+        run: .venv/bin/python scripts/test_macos_installer.py
       - name: Build, verify first launch, capture real UI and upload model-free app
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -60,6 +63,7 @@ jobs:
             dist/macos-oneclick/*.json
             dist/macos-oneclick/screenshots/*.png
             .cache/macos-first-launch/.cache/desktop/app.log
+            .cache/macos-first-launch/.cache/desktop/macos-ui-smoke.*
           if-no-files-found: warn
   publish:
     needs: [models, application]

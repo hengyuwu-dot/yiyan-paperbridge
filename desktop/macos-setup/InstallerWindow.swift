@@ -1,5 +1,10 @@
 import AppKit
 
+final class InstallerBackground: NSView {
+    override var isOpaque:Bool {true}
+    override func draw(_ dirtyRect:NSRect) {NSColor(calibratedRed:0.97,green:0.98,blue:0.96,alpha:1).setFill();dirtyRect.fill()}
+}
+
 final class MacInstallerWindow: NSObject, NSWindowDelegate {
     var window:NSWindow!
     let standard=NSButton(radioButtonWithTitle:"4B 标准版",target:nil,action:nil)
@@ -45,6 +50,8 @@ final class MacInstallerWindow: NSObject, NSWindowDelegate {
     func makeWindow() {
         let green=NSColor(calibratedRed:0.16,green:0.40,blue:0.31,alpha:1)
         window=NSWindow(contentRect:NSRect(x:0,y:0,width:760,height:700),styleMask:[.titled,.closable,.miniaturizable],backing:.buffered,defer:false)
+        window.appearance=NSAppearance(named:.aqua)
+        window.contentView=InstallerBackground(frame:window.contentView!.bounds)
         window.title=updateOnly ? "译研 · 更新软件":"译研 · 一键下载安装";window.delegate=self;window.isReleasedWhenClosed=false
         window.backgroundColor=NSColor(calibratedRed:0.97,green:0.98,blue:0.96,alpha:1)
         let title=NSTextField(labelWithString:updateOnly ? "更新译研，保留本地模型。":"选择模型，接下来交给译研。")

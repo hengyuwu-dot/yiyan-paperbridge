@@ -592,17 +592,18 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
             if info?["busy"] as? Bool == true || (info == nil && self.backend?.isRunning == true) {
                 self.showWindow()
                 self.alert("当前任务还在运行", "请等待翻译或模型准备完成。若想中止翻译，请先在页面中点击“停止翻译”，等保存后再退出。关闭窗口可以让任务继续在后台运行。")
-                sender.reply(toApplicationShouldTerminate: false)
+                self.checkingQuit = false
             } else {
                 self.web.evaluateJavaScript("typeof desktopBusy === 'function' && desktopBusy()") { value, error in
                     if value as? Bool == true {
                         self.showWindow(); self.alert("正在处理文件", "请等待当前导入、批量提交或清理完成后再退出。")
-                        sender.reply(toApplicationShouldTerminate: false)
-                    } else { self.quitting = true; sender.reply(toApplicationShouldTerminate: true) }
+                        self.checkingQuit = false
+                    } else { self.checkingQuit = false; self.quitting = true; NSApp.terminate(nil) }
                 }
             }
         }
-        return .terminateLater
+        // Keep the normal run loop alive while WebKit completes its busy probe.
+        return .terminateCancel
     }
     func applicationWillTerminate(_ notification: Notification) {
         quitting = true

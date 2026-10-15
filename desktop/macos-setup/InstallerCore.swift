@@ -214,7 +214,7 @@ final class MacInstallation {
         throw SetupFailure.message("此版本适用于 Apple Silicon（M 系列）Mac。")
         #endif
         if fm.fileExists(atPath:destination.path) {try verifyApplication(destination)}
-        if NSRunningApplication.runningApplications(withBundleIdentifier:"org.paperbridge.yiyan.offline").contains(where:{$0.bundleURL?.standardizedFileURL==destination.standardizedFileURL}) || NSRunningApplication.runningApplications(withBundleIdentifier:"org.paperbridge.yiyan").contains(where:{$0.bundleURL?.standardizedFileURL==destination.standardizedFileURL}) {throw SetupFailure.message("请先退出正在运行的译研，再点击继续安装。")}
+        if NSRunningApplication.runningApplications(withBundleIdentifier:"org.paperbridge.yiyan.offline").isEmpty == false || NSRunningApplication.runningApplications(withBundleIdentifier:"org.paperbridge.yiyan").isEmpty == false {throw SetupFailure.message("请先退出正在运行的译研，再点击继续安装。")}
         try fm.createDirectory(at:cache,withIntermediateDirectories:true)
         let lockPath=cache.deletingLastPathComponent().appendingPathComponent(".paperbridge-installer.lock")
         let descriptor=open(lockPath.path,O_CREAT|O_RDWR,0o600)
@@ -248,7 +248,8 @@ final class MacInstallation {
         let assets=[release.app]+(needsModel ? edition.parts : [])
         let total=assets.reduce(Int64(0)){$0+$1.bytes}
         let modelSize=edition.snapshot.files.reduce(Int64(0)){$0+$1.size}
-        let required=Int64(4_000_000_000)+total+(needsModel ? modelSize : 0)
+        let cached=assets.reduce(Int64(0)) { $0 + min($1.bytes, max(fileBytes(cache.appendingPathComponent($1.name)),fileBytes(cache.appendingPathComponent($1.name+".partial")))) }
+        let required=Int64(4_000_000_000)+max(0,total-cached)+(needsModel ? modelSize : 0)
         let available=(try fm.attributesOfFileSystem(forPath:dataHome.path)[.systemFreeSize] as? NSNumber)?.int64Value ?? 0
         guard available>required else {throw SetupFailure.message("安装需预留约 \(Int(ceil(Double(required)/1e9))) GB 可用空间，请清理后重试。")}
         try fm.createDirectory(at:destination.deletingLastPathComponent(),withIntermediateDirectories:true)

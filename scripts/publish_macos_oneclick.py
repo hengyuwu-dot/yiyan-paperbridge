@@ -72,7 +72,7 @@ def build_app():
         python=app/'Contents/Resources/Python/bin/python3.12'
         subprocess.run([str(python),'-X','utf8','-c','import fastapi,uvicorn,pymupdf,psutil,onnxruntime,babeldoc,fontTools; print("Bundled PDF/UI imports passed")'],check=True,env={**os.environ,'PYTHONDONTWRITEBYTECODE':'1'},cwd='/tmp')
     package.VERSION=VERSION;package.smoke_test=portable_cpu_smoke
-    package.SCRIPTS.extend(['publish_offline_ci.py','publish_macos_oneclick.py','build_macos_installer.py'])
+    package.SCRIPTS.extend(['publish_offline_ci.py','publish_macos_oneclick.py','build_macos_installer.py','test_macos_installer.py'])
     sys.argv=['package_macos.py','--no-dmg','--python-runtime',str(ROOT/'.cache/python')]
     package.main()
     resources=APP/'Contents/Resources';layout=resources/'LayoutAssets'
