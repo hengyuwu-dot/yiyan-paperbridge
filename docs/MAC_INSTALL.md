@@ -1,6 +1,6 @@
 # 译研 Mac 安装与更新教程
 
-**[下载 Mac 一键安装器](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.1-macos/Yiyan-Mac-OneClick-Setup.dmg)** · [软件首页](../README.md)
+**[下载 Mac 一键安装器](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.2-macos/Yiyan-Mac-OneClick-Setup.dmg)** · [软件首页](../README.md)
 
 打开安装器，选择 4B 或 14B，点击“下载并安装”。应用、所选模型、字体和排版环境会自动装好，之后可直接离线使用。
 
@@ -18,6 +18,8 @@
 日常论文阅读可先选择 4B；处理复杂长句和专业表达可选择 14B。两版都在本机运行，使用相同的专业词库、公式保护与排版流程。
 
 ## 一键下载安装
+
+![选择 4B 或 14B 后一键安装](images/macos-setup.png)
 
 1. 下载并打开 `Yiyan-Mac-OneClick-Setup.dmg`。
 2. 双击里面的 **安装译研**。首次打开若 macOS 提示需要确认，可在“系统设置 → 隐私与安全性”中允许打开安装器。

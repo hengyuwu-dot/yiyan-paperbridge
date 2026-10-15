@@ -268,7 +268,7 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
                         try FileManager.default.createDirectory(at:cache,withIntermediateDirectories:true)
                         let helper = cache.appendingPathComponent("安装译研.app")
                         try FileManager.default.copyItem(at:resources.appendingPathComponent("Updater.app"),to:helper)
-                        let config = NSWorkspace.OpenConfiguration();config.arguments = ["--update","--destination",Bundle.main.bundleURL.path,"--data",self.root.path]
+                        let config = NSWorkspace.OpenConfiguration();config.createsNewApplicationInstance = true;config.arguments = ["--update","--destination",Bundle.main.bundleURL.path,"--data",self.root.path]
                         NSWorkspace.shared.openApplication(at:helper,configuration:config) { _,error in DispatchQueue.main.async {if let error=error {self.alert("更新未能启动",error.localizedDescription)}else{NSApp.terminate(nil)}} }
                     } catch {self.alert("更新未能启动",error.localizedDescription)}
                 }
