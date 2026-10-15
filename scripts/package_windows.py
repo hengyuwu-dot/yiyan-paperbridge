@@ -49,6 +49,8 @@ def extract(archive, folder):
 
 
 def copy(source, destination):
+    if not source.exists():
+        raise FileNotFoundError(f"Missing package input: {source}")
     if source.is_dir():
         shutil.copytree(source, destination, dirs_exist_ok=True,
                         ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store", "bin", "obj"))
@@ -112,6 +114,8 @@ def build():
                     "-r", str(ROOT / "requirements.windows.txt")], check=True)
     (python / "python312._pth").write_text("python312.zip\n.\nLib/site-packages\n../../Engine\nimport site\n", encoding="utf-8")
     engine = OUTPUT / "Engine"
+    if not (ROOT / "examples/sci-layout-sample.pdf").is_file():
+        subprocess.run([sys.executable, str(ROOT / "scripts/make_sample.py")], check=True)
     for name in ("paperbridge", "scripts", "desktop", "tests", "docs", "release-assets", "examples", "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md", "requirements.txt", "requirements.windows.txt"):
         copy(ROOT / name, engine / name)
     corresponding_sources(packages, engine / 'release-assets')
@@ -144,6 +148,10 @@ def build():
                     "-c", "Release", "-r", "win-x64", "--self-contained", "true",
                     "-p:PublishSingleFile=true", "-p:IncludeNativeLibrariesForSelfExtract=true",
                     "-o", str(OUTPUT)], check=True)
+    nuget = Path.home() / '.nuget/packages/microsoft.web.webview2/1.0.3537.50'
+    for path in nuget.rglob('*'):
+        if path.is_file() and path.name.lower().startswith(('license', 'notice')):
+            copy(path, engine / 'release-assets/windows-licenses/WebView2' / path.name)
     copy(ROOT / "docs/WINDOWS_INSTALL.md", OUTPUT / "Windows-安装教程.md")
     report = {"platform": "Windows x64", "version": "1.5.0", "models": "user_selects_4B_or_14B",
               "format": "GGUF Q4_K_M", "context_tokens": 8192, "runtime": runtime,

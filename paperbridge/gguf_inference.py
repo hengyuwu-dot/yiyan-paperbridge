@@ -46,7 +46,8 @@ class GGUFInference:
                    "--ctx-size", str(CONTEXT_TOKENS), "--parallel", "1", "--batch-size", "512",
                    "--ubatch-size", "128", "--n-gpu-layers", "99" if backend == "cuda" else "0",
                    "--jinja", "--chat-template-kwargs", '{"enable_thinking":false}',
-                   "--cache-type-k", "f16", "--cache-type-v", "f16", "--no-webui", "--no-warmup"]
+                   "--cache-type-k", "f16", "--cache-type-v", "f16", "--cache-ram", "0",
+                   "--no-context-shift", "--no-webui", "--no-warmup"]
         environment = dict(os.environ, LLAMA_API_KEY=self.token)
         if device is not None:
             environment["CUDA_VISIBLE_DEVICES"] = str(device["index"])
