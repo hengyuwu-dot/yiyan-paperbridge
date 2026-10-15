@@ -66,3 +66,11 @@ test('clearing paper records removes drafts and reading positions while preservi
   assert.equal(saved.getItem('paperbridge.terms'),'flux ratio = 通量比');assert.equal(saved.getItem('paperbridge.zoom'),'150');assert.equal(saved.getItem('another-app'),'keep');
   assert.equal(ui.clearPaperRecords(saved),0);
 });
+
+test('new documents use the installed model on Mac and Windows while existing translations keep their selected profile',()=>{
+  assert.equal(ui.initialProfile({settings:{},translated:false},{platform:'macos',default_profile:'standard'}),'standard');
+  assert.equal(ui.initialProfile({settings:{},translated:false},{platform:'macos',default_profile:'precision'}),'precision');
+  assert.equal(ui.initialProfile({settings:{profile:'standard'}},{default_profile:'precision'}),'standard');
+  assert.equal(ui.initialProfile({settings:{},translated:true},{default_profile:'precision'}),'standard');
+  assert.equal(ui.initialProfile({settings:{},translated:false},{platform:'windows',default_profile:'standard'}),'standard');
+});

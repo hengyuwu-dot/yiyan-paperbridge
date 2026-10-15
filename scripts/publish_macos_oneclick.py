@@ -1,5 +1,7 @@
 """Publish independent Mac application updates and immutable model archives."""
 import argparse
+import base64
+import re
 import hashlib
 import json
 import os
@@ -15,13 +17,15 @@ sys.path.insert(0,str(ROOT/'scripts'))
 import publish_offline_ci as common
 from build_macos_installer import build as build_installer
 CONFIG=json.loads((ROOT/'release-assets/macos-version.json').read_text())
-VERSION=CONFIG['version'];TAG=f'v{VERSION}-macos';MODEL_TAG=CONFIG['model_tag']
+VERSION=os.environ.get('PAPERBRIDGE_RELEASE_VERSION',CONFIG['version'])
+assert re.fullmatch(r'\d+\.\d+\.\d+',VERSION)
+TAG=f'v{VERSION}-macos';MODEL_TAG=CONFIG['model_tag']
 APP=ROOT/'dist/release/译研.app'
 BASE=f'https://github.com/{common.REPO}/releases/download/'
 
 
 def find_release(tag):
-    return next((r for r in common.api(f'/repos/{common.REPO}/releases?per_page=100') if r.get('tag_name')==tag),None)
+    return next((r for r in common.api(f'/repos/{common.REPO}/releases?per_page=100') if r.get('tag_name')==tag or (r.get('draft') and ('<!-- paperbridge-tag: '+tag+' -->' in (r.get('body') or '') or '/releases/download/'+tag+'/' in (r.get('body') or '')))),None)
 
 
 def release(tag,title):
@@ -29,7 +33,7 @@ def release(tag,title):
     if existing:
         if not existing['draft']: raise RuntimeError('Published releases are immutable: '+tag)
         return existing
-    return common.api(f'/repos/{common.REPO}/releases',{'tag_name':tag,'target_commitish':os.environ['GITHUB_SHA'],'name':title,'draft':True,'prerelease':True})
+    return common.api(f'/repos/{common.REPO}/releases',{'tag_name':tag,'target_commitish':os.environ['GITHUB_SHA'],'name':title,'body':'<!-- paperbridge-tag: '+tag+' -->','draft':True,'prerelease':True})
 
 
 def model_assets():
@@ -108,7 +112,7 @@ def build_app():
     target=release(TAG,'译研 · Mac 一键安装与独立更新 · 4B / 14B 自选')
     for p in [*out.glob('*.*'),*out.glob('screenshots/*.png'),ROOT/'dist/release'/f'PaperBridge-{VERSION}-Source.zip',ROOT/'dist/release'/f'PaperBridge-{VERSION}-ThirdPartySource.zip']:
         common.upload(target['id'],p)
-    common.api(f"/repos/{common.REPO}/releases/{target['id']}",{'body':(ROOT/'docs/RELEASE_v1.8.0_MACOS.md').read_text()},method='PATCH')
+    common.api(f"/repos/{common.REPO}/releases/{target['id']}",{'body':(ROOT/'docs/RELEASE_v1.8.0_MACOS.md').read_text().replace('/v1.8.0-macos/','/'+TAG+'/')},method='PATCH')
 
 
 def publish_app():
@@ -116,10 +120,35 @@ def publish_app():
     models=find_release(MODEL_TAG);assert models and not models['draft']
     names={a['name'] for a in target['assets']}
     assert {'macos-app.json','Yiyan-Mac-OneClick-Setup.dmg','MACOS-FIRST-LAUNCH.json','MACOS-BUILD-REPORT.json'} <= names
-    common.api(f"/repos/{common.REPO}/releases/{target['id']}",{'draft':False,'prerelease':True,'make_latest':'false'},method='PATCH')
+    common.api(f"/repos/{common.REPO}/releases/{target['id']}",{'tag_name':TAG,'draft':False,'prerelease':True,'make_latest':'false'},method='PATCH')
     print('Published Mac one-click candidate with independent models and app update manifest',flush=True)
 
 
+def promote_app():
+    common.require_runner()
+    target=find_release(TAG)
+    assert target and not target['draft']
+    records={a['name']:a for a in target['assets']}
+    for filename in ('macos-app.json','MACOS-BUILD-REPORT.json','MACOS-FIRST-LAUNCH.json'):
+        asset=records[filename]
+        path=ROOT/'.cache'/filename
+        common.download(asset['browser_download_url'],path,asset['digest'].removeprefix('sha256:'),asset['size'])
+    manifest=json.loads((ROOT/'.cache/macos-app.json').read_text())
+    build=json.loads((ROOT/'.cache/MACOS-BUILD-REPORT.json').read_text())
+    launch=json.loads((ROOT/'.cache/MACOS-FIRST-LAUNCH.json').read_text())
+    assert manifest['schema']==1 and manifest['version']==VERSION
+    assert build['first_launch_passed'] and build['models_outside_application'] and not build['application_has_models']
+    assert launch['loaded'] and launch['status']['layout_installed']
+    archive=records[manifest['app']['name']]
+    assert archive['digest']=='sha256:'+manifest['app']['sha256'] and archive['size']==manifest['app']['bytes']
+    channel={'schema':1,'manifest_url':BASE+TAG+'/macos-app.json'}
+    old=common.api(f'/repos/{common.REPO}/contents/release-assets/macos-update.json?ref=main')
+    if json.loads(base64.b64decode(old['content'])) != channel:
+        common.api(f'/repos/{common.REPO}/contents/release-assets/macos-update.json',{'message':'Publish Mac application update '+VERSION,'content':base64.b64encode((json.dumps(channel,indent=2)+'\n').encode()).decode(),'sha':old['sha'],'branch':'main'},method='PUT')
+    common.api(f"/repos/{common.REPO}/releases/{target['id']}",{'prerelease':False,'make_latest':'false'},method='PATCH')
+    print('Published stable Mac '+VERSION+' and its app-only update channel; model release unchanged',flush=True)
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['models','build','publish']);a=p.parse_args()
-    {'models':model_assets,'build':build_app,'publish':publish_app}[a.action]()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['models','build','publish','promote']);a=p.parse_args()
+    {'models':model_assets,'build':build_app,'publish':publish_app,'promote':promote_app}[a.action]()

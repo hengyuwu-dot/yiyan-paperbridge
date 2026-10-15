@@ -303,7 +303,7 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
     @objc func showProject() { if let root = root { NSWorkspace.shared.open(root) } }
     @objc func showLog() { if let root = root { NSWorkspace.shared.open(root.appendingPathComponent(".cache/desktop/app.log")) } }
     @objc func showLicenses() { if let root = root { NSWorkspace.shared.open(root.appendingPathComponent("THIRD_PARTY_NOTICES.md")) } }
-    @objc func help() { alert("如何使用译研", "点击“选择论文 PDF”或按 ⌘O 导入论文，然后选择领域和翻译模式。完成后可左右对照，并通过“导出”保存 PDF。\n\n关闭窗口后任务继续运行；点击 Dock 图标可重新打开。使用 ⌘Q 退出软件。翻译过程中请保持 Mac 唤醒。\n\n" + (bundledModels ? "此版本内置 14B、4B 模型与排版资源，可以离线翻译，无需再下载模型。内置模型随应用保存，请勿在运行时移动或删除应用。论文和任务保存在本机“资源库/Application Support/PaperBridge-Offline”中。" : portable ? "此版本内置运行环境。首次使用点击“准备本地翻译资源”下载公开模型；准备完成后可离线翻译。论文与模型保存在本机“资源库/Application Support/PaperBridge”中。" : "此版本复用本机现有 Python 环境和模型；请保留原“翻译软件”目录。")) }
+    @objc func help() { alert("如何使用译研", "点击“选择论文 PDF”或按 ⌘O 导入论文，然后选择领域和翻译模式。完成后可左右对照，并通过“导出”保存 PDF。\n\n关闭窗口后任务继续运行；点击 Dock 图标可重新打开。使用 ⌘Q 退出软件。翻译过程中请保持 Mac 唤醒。\n\n" + (sharedDataDirectory != nil ? "模型已独立保存在本机工作室，更新应用时继续保留。通过“译研 → 检查更新”获取新版本，更新无需重新下载模型。论文、译稿和模型保存在“资源库/Application Support/PaperBridge-Offline”中。" : bundledModels ? "此版本内置 14B、4B 模型与排版资源，可以离线翻译，无需再下载模型。内置模型随应用保存，请勿在运行时移动或删除应用。论文和任务保存在本机“资源库/Application Support/PaperBridge-Offline”中。" : portable ? "此版本内置运行环境。首次使用点击“准备本地翻译资源”下载公开模型；准备完成后可离线翻译。论文与模型保存在本机“资源库/Application Support/PaperBridge”中。" : "此版本复用本机现有 Python 环境和模型；请保留原“翻译软件”目录。")) }
     @objc func retryStart() {
         if portable {
             do { try preparePortableProject(); start() }

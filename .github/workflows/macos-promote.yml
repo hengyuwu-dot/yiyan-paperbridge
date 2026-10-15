@@ -1,0 +1,22 @@
+name: Publish Mac application update
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '待发布的 Mac 版本号（例如 1.8.0），模型继续复用'
+        required: true
+        default: '1.8.1'
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Verify built app and publish its update channel
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PAPERBRIDGE_RELEASE_VERSION: ${{ inputs.version }}
+        run: python3 scripts/publish_macos_oneclick.py promote

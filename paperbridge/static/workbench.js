@@ -77,7 +77,12 @@
     const count = job.issue_count ?? job.review_count ?? 0;
     return ['自动检查',count ? `${count} 段提示` : '已完成',count ? '可一键复查修复' : '未发现规则疑点'];
   }
-  const api = {normalize, matchesSegment, readingPage, rememberPage, readDraft, saveDraft, clearDraft, clearPaperRecords, formatDuration, formatBytes, durationMetric, issueMetric, cleanupSelection, cleanupEstimate};
+  function initialProfile(job, status) {
+    if (['standard', 'precision'].includes(job.settings?.profile)) return job.settings.profile;
+    if (job.translated && !job.settings?.engine) return 'standard';
+    return ['standard', 'precision'].includes(status?.default_profile) ? status.default_profile : 'precision';
+  }
+  const api = {initialProfile, normalize, matchesSegment, readingPage, rememberPage, readDraft, saveDraft, clearDraft, clearPaperRecords, formatDuration, formatBytes, durationMetric, issueMetric, cleanupSelection, cleanupEstimate};
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PaperUI = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
