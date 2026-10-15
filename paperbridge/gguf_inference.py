@@ -6,6 +6,7 @@ import secrets
 import socket
 import subprocess
 import time
+import threading
 from pathlib import Path
 
 import httpx
@@ -156,10 +157,24 @@ class GGUFInference:
 def block_external_network():
     original_connect = socket.socket.connect
     original_connect_ex = socket.socket.connect_ex
+    original_pair = socket.socketpair
+    pair_context = threading.local()
+
+    def socketpair(*args, **kwargs):
+        # CPython implements Windows socketpair through a temporary loopback
+        # listener. asyncio needs this private pair to wake its event loop.
+        pair_context.creating = True
+        try:
+            return original_pair(*args, **kwargs)
+        finally:
+            pair_context.creating = False
 
     def permitted(address):
-        return (isinstance(address, tuple) and len(address) == 2
-                and address[0] == "127.0.0.1" and address[1] in LOCAL_PORTS)
+        if not isinstance(address, tuple) or len(address) < 2:
+            return False
+        if getattr(pair_context, "creating", False):
+            return address[0] in {"127.0.0.1", "::1"}
+        return address[0] == "127.0.0.1" and address[1] in LOCAL_PORTS
 
     def connect(sock, address):
         if not permitted(address):
@@ -173,5 +188,6 @@ def block_external_network():
 
     socket.socket.connect = connect
     socket.socket.connect_ex = connect_ex
+    socket.socketpair = socketpair
     os.environ["HF_HUB_OFFLINE"] = "1"
     os.environ["TRANSFORMERS_OFFLINE"] = "1"

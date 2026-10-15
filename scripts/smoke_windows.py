@@ -59,6 +59,8 @@ shutil.copy2(folder/'bilingual.pdf',ROOT/'Windows-smoke-bilingual.pdf')
                                 cwd=bundle / "Engine", stdout=log, stderr=log, timeout=1800)
     if result.returncode:
         print((data / "smoke.log").read_text(encoding="utf-8")[-12000:])
+        for inference_log in (data / 'tmp').glob('inference-*.log'):
+            print(inference_log.read_text(encoding='utf-8', errors='replace')[-8000:])
         raise SystemExit(result.returncode)
     print((data / "WINDOWS-SMOKE-REPORT.json").read_text(encoding="utf-8"))
 

@@ -1,5 +1,5 @@
 name: Build Windows desktop app
-# Use locked PDF dependencies and generate fixtures on a fresh Windows checkout.
+# Locked PDF dependencies; validate Windows event-loop wakeup during offline inference.
 on:
   workflow_dispatch:
   push:

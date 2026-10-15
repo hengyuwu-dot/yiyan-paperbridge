@@ -74,7 +74,7 @@ def test_worker_blocks_external_and_unowned_local_connections(monkeypatch):
     calls = []
     monkeypatch.setattr(socket.socket, "connect", lambda self, address: calls.append(address))
     monkeypatch.setattr(socket.socket, "connect_ex", lambda self, address: calls.append(address) or 0)
-    original = socket.socket.connect, socket.socket.connect_ex
+    original = socket.socket.connect, socket.socket.connect_ex, socket.socketpair
     try:
         block_external_network()
         LOCAL_PORTS.add(19283)
@@ -85,8 +85,29 @@ def test_worker_blocks_external_and_unowned_local_connections(monkeypatch):
                 with pytest.raises(OSError): sock.connect_ex(address)
         assert calls == [("127.0.0.1", 19283)]
     finally:
-        socket.socket.connect, socket.socket.connect_ex = original
+        socket.socket.connect, socket.socket.connect_ex, socket.socketpair = original
         LOCAL_PORTS.discard(19283)
+
+
+def test_offline_worker_allows_event_loop_private_wakeup_pair():
+    import asyncio
+    import socket
+    original = socket.socket.connect, socket.socket.connect_ex, socket.socketpair
+    try:
+        block_external_network()
+        left, right = socket.socketpair()
+        try:
+            left.send(b"wake")
+            assert right.recv(4) == b"wake"
+        finally:
+            left.close(); right.close()
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(asyncio.sleep(0))
+        loop.close()
+        with socket.socket() as sock:
+            with pytest.raises(OSError): sock.connect(("127.0.0.1", 8765))
+    finally:
+        socket.socket.connect, socket.socket.connect_ex, socket.socketpair = original
 
 
 def test_windows_translator_shares_scientific_validation_and_releases_process(monkeypatch, tmp_path):
