@@ -4,9 +4,9 @@
 
 译研是一款面向 SCI 论文阅读的桌面应用，将英文科研 PDF 翻译成自然、专业的中文，把全文翻译、专业术语、中英对照和 PDF 导出放进一个简洁的论文工作室。
 
-Mac 完整离线版内置 **Qwen3-14B 4bit 精译模型**与 **Qwen3-4B 4bit 标准模型**，包含排版资源、字体与运行环境。Windows 提供 **一键安装向导**：选择 4B 或 14B 后自动下载安装完整环境，安装完成即可离线翻译。
+Mac 与 Windows 都提供 **一键安装向导**：选择 4B 或 14B 后自动准备完整环境，装好即可离线翻译。Mac 的模型与应用独立保存，后续更新继续使用已安装模型。
 
-**[下载完整 Mac 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b) · [Windows 一键安装](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
+**[Mac 一键安装](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.2-macos/Yiyan-Mac-OneClick-Setup.dmg) · [Windows 一键安装](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
 
 ![译研 Mac 论文工作室](docs/images/workspace.jpg)
 
@@ -43,22 +43,30 @@ Mac 完整离线版内置 **Qwen3-14B 4bit 精译模型**与 **Qwen3-4B 4bit 标
 
 ![固态存储与可选清理内容](docs/images/resources.jpg)
 
-## 安装到 Mac
+## 安装到 Mac：选择模型，一键准备
 
-| 项目 | 配置 |
-| --- | --- |
-| 芯片 | Apple Silicon，M 系列 Mac |
-| 系统 | macOS 26.2 或更新版本 |
-| 内存 | 14B 精译建议 24GB 或更多统一内存 |
-| 下载大小 | 完整离线应用约 9.50GB，分为 6 个下载分卷 |
-| 可用空间 | 安装过程中建议预留 35GB，用于分卷、合并归档与应用 |
+**[下载 Mac 一键安装器（约 1.6MB）](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.2-macos/Yiyan-Mac-OneClick-Setup.dmg)** · [安装与更新教程](docs/MAC_INSTALL.md)
 
-1. 打开 **[下载页面](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b)**，下载 `.part001` 至 `.part006` 全部 6 个分卷，以及 `Full-Mac-Merge-Tools.zip`。
-2. 解压合并工具，将全部分卷放进解压后的“合并工具”文件夹，双击 `合并完整应用.command`。
-3. 工具校验并合并文件后，打开生成的 `Yiyan-1.4.0-AppleSilicon-Offline-14B.tar.gz`，解压得到“译研.app”。
-4. 将“译研.app”拖入“应用程序”，双击打开译研。
+![Mac 一键安装器：4B / 14B 自选](docs/images/macos-setup.png)
 
-**[查看完整图文安装与使用教程 →](docs/MAC_INSTALL.md)**
+1. 打开 DMG，双击 **安装译研**。
+2. 选择 **4B 标准版**或 **14B 精译版**，点击 **下载并安装**。
+3. 等待完成，打开译研，导入论文即可离线翻译。
+
+支持暂停续传、自动校验，安装成功后默认清理下载缓存。首次安装需要联网，之后的翻译与导出在本机离线运行。
+
+| 配置 | 4B 标准版 | 14B 精译版 |
+| --- | --- | --- |
+| Mac 芯片 | Apple Silicon（M 系列） | Apple Silicon（M 系列） |
+| 系统 | macOS 26.2 或更新 | macOS 26.2 或更新 |
+| 建议统一内存 | 16GB 或更多 | 24GB 或更多 |
+| 模型大小 | 约 2.15GB | 约 7.86GB |
+| 应用与运行环境 | 另约 0.57GB | 另约 0.57GB |
+| 安装预留空间 | 15GB | 30GB |
+
+**更新不用重下模型。** Mac 模型独立保存在本机工作室，旧完整离线版的模型会迁入独立目录。通过菜单 **译研 → 检查更新**获取新版，更新只替换应用与运行环境，保留模型、论文、译稿和设置。
+
+后续版本发布方法与更新接口见 [Mac 更新维护说明](docs/MAC_RELEASE_MAINTENANCE.md)。需要为完全离线的电脑准备安装文件，也可使用原有的 [Mac 完整离线包](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b)。
 
 ## 开始阅读
 

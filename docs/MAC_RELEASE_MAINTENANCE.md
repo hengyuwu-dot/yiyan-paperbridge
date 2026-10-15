@@ -4,7 +4,7 @@
 
 ## 发布下一次应用更新
 
-1. 修改应用源码，并将 `release-assets/macos-version.json` 中的 `version` 提升，例如 `1.8.1`。保留 `model_tag`，即可复用现有 4B / 14B 模型资源。
+1. 修改应用源码，并将 `release-assets/macos-version.json` 中的 `version` 提升，例如 `1.8.3`。保留 `model_tag`，即可复用现有 4B / 14B 模型资源。
 2. 推送后，“Build Mac one-click installer and independent updates”自动构建应用、检查内置运行环境、验证窗口首次启动，并生成候选发行版。
 3. 检查候选版后，在 GitHub **Actions → Publish Mac application update → Run workflow** 中填写版本号。
 4. 发布流程核对构建报告、应用文件大小与 SHA256、首次启动记录，随后发布正式版并更新版本检查入口。
