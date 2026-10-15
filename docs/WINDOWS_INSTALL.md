@@ -4,6 +4,8 @@
 
 [下载 Windows 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.5.0-windows) · [返回软件首页](../README.md)
 
+![Windows 论文工作室](images/windows-workspace.png)
+
 ## 1. 选择适合电脑的模型
 
 | 配置 | 4B 标准 | 14B 精译 |

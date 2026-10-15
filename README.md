@@ -78,6 +78,8 @@ light curve = 光变曲线
 
 ## Windows 版：4B / 14B 自选
 
+![Windows 论文工作室](docs/images/windows-workspace.png)
+
 [下载 Windows 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.5.0-windows) · [安装与使用教程](docs/WINDOWS_INSTALL.md)
 
 Windows 版在首次打开时选择下载 4B 标准或 14B 精译模型，之后可以在每篇论文的翻译设置中切换。内置 CPU 与 NVIDIA CUDA 推理组件，并显示电脑内存和显存。
