@@ -2,11 +2,11 @@
 
 ### 跨越语言，读懂研究。
 
-译研是一款面向 SCI 论文阅读的 Mac 应用，将英文科研 PDF 翻译成自然、专业的中文，把全文翻译、专业术语、中英对照和 PDF 导出放进一个简洁的论文工作室。
+译研是一款面向 SCI 论文阅读的桌面应用，将英文科研 PDF 翻译成自然、专业的中文，把全文翻译、专业术语、中英对照和 PDF 导出放进一个简洁的论文工作室。
 
 内置 **Qwen3-14B 4bit 精译模型**与 **Qwen3-4B 4bit 标准模型**，在你的 Mac 上完成翻译。完整离线版包含模型、排版资源、字体与运行环境，安装后即可开始阅读。
 
-**[下载完整 Mac 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b)** · **[Mac 安装教程](docs/MAC_INSTALL.md)** · **[使用方法](#开始阅读)**
+**[下载完整 Mac 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.4.0-offline-14b)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
 
 ![译研 Mac 论文工作室](docs/images/workspace.jpg)
 
@@ -75,6 +75,22 @@ circumstellar medium = 星周介质
 progenitor = 前身星
 light curve = 光变曲线
 ```
+
+## Windows 版：4B / 14B 自选
+
+[下载 Windows 版](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.5.0-windows) · [安装与使用教程](docs/WINDOWS_INSTALL.md)
+
+Windows 版在首次打开时选择下载 4B 标准或 14B 精译模型，之后可以在每篇论文的翻译设置中切换。内置 CPU 与 NVIDIA CUDA 推理组件，并显示电脑内存和显存。
+
+| 配置 | 4B 标准 | 14B 精译 |
+| --- | --- | --- |
+| Windows 系统 | Windows 10 2004+ / 11，x64 | Windows 10 2004+ / 11，x64 |
+| 内存最低 / 建议 | **16GB / 16GB+** | **24GB / 32GB+** |
+| NVIDIA 显存最低 / 建议 | **6GB / 8GB+** | **12GB / 16GB+** |
+| 模型大小 | 约 2.50GB | 约 9.00GB |
+| 安装使用预留空间 | 15GB | 30GB |
+
+两种模型都支持 CPU，显存要求用于完整 GPU 加速。配置按 Q4_K_M、8192 上下文、单任务预留开销；同时安装两种模型留 40GB 空间。更多选择方法见 Windows 教程。
 
 ## 开源与许可
 

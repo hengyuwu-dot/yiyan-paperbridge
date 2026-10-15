@@ -1,0 +1,82 @@
+name: Build Windows desktop app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/windows.yml]
+permissions:
+  contents: read
+concurrency:
+  group: windows-desktop-release
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 80
+    permissions:
+      contents: write
+    env:
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      HF_HUB_DISABLE_XET: '1'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12.10'
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+      - name: Prepare Python dependencies and local layout
+        run: |
+          python -m pip install -r requirements.windows.txt pytest
+          python scripts/install_layout.py
+      - name: Validate portable inference and Windows file locks
+        run: python -m pytest tests/test_windows.py tests/test_core.py tests/test_translation_quality_regressions.py -q
+      - name: Build native Windows desktop and embedded runtime
+        run: python scripts/package_windows.py build
+      - name: Exercise installed WebView2 desktop window
+        shell: pwsh
+        run: |
+          $process = Start-Process dist/windows/Yiyan/Yiyan.exe -ArgumentList '--smoke-test' -PassThru
+          if (-not $process.WaitForExit(300000)) { $process.Kill($true); throw 'Desktop smoke timed out' }
+          if ($process.ExitCode -ne 0) { throw 'Desktop startup failed' }
+          $report = Join-Path $env:LOCALAPPDATA 'PaperBridge/windows-ui-smoke.json'
+          if (-not (Test-Path $report)) { throw 'Missing desktop smoke report' }
+          Copy-Item (Join-Path $env:LOCALAPPDATA 'PaperBridge/windows-ui-smoke.*') .cache/windows-build/
+      - name: Translate and export a real PDF using the packaged 4B engine
+        run: python scripts/smoke_windows.py
+      - name: Package portable app and installer
+        shell: pwsh
+        run: |
+          python scripts/package_windows.py archive
+          $compiler = '${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe'
+          if (-not (Test-Path $compiler)) { choco install innosetup --no-progress -y }
+          & "${env:ProgramFiles(x86)}/Inno Setup 6/ISCC.exe" desktop/windows/installer.iss
+          if ($LASTEXITCODE -ne 0) { throw 'Installer build failed' }
+      - name: Save Windows validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: Windows-validation
+          path: |
+            .cache/windows-build/windows-ui-smoke.*
+            .cache/windows-smoke/WINDOWS-SMOKE-REPORT.json
+            .cache/windows-smoke/Windows-smoke-*.pdf
+            .cache/windows-smoke/smoke.log
+            ~/AppData/Local/PaperBridge/desktop-error.log
+          if-no-files-found: warn
+      - name: Publish verified Windows installer and portable app
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v1.5.0-windows --target $env:GITHUB_SHA --title '译研 1.5 · Windows 版 · 4B / 14B 自选' --notes-file docs/RELEASE_v1.5.0_WINDOWS.md --latest=false --draft
+          if ($LASTEXITCODE -ne 0) { throw 'Could not create Windows release' }
+          gh release upload v1.5.0-windows dist/windows/Yiyan-1.5.0-Windows-x64-Setup.exe dist/windows/Yiyan-1.5.0-Windows-x64.zip dist/windows/Yiyan-1.5.0-Windows-x64.zip.sha256 .cache/windows-smoke/WINDOWS-SMOKE-REPORT.json .cache/windows-build/windows-ui-smoke.png docs/WINDOWS_INSTALL.md
+          if ($LASTEXITCODE -ne 0) { throw 'Could not upload Windows assets' }
+          gh release edit v1.5.0-windows --draft=false --latest=false
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish Windows release' }

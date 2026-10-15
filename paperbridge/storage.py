@@ -1,6 +1,5 @@
 """Local disk accounting and narrowly scoped optional cache cleanup."""
 import copy
-import fcntl
 import json
 import os
 import re
@@ -11,6 +10,7 @@ import time
 from pathlib import Path
 from contextlib import contextmanager
 
+from .file_lock import lock_file, unlock_file
 from .storage_cleanup import TEMP_FILES, history_candidates
 
 CHOICES = [
@@ -93,7 +93,7 @@ def measure(paths, errors):
                 continue
             seen.add(key)
             # Removing only one hard link may free no blocks. Be conservative.
-            result["bytes"] += info.st_blocks * 512 if info.st_nlink == 1 else 0
+            result["bytes"] += getattr(info, "st_blocks", (info.st_size + 511) // 512) * 512 if info.st_nlink == 1 else 0
             result["logical_bytes"] += info.st_size
             result["files"] += 1
     return result
@@ -151,7 +151,7 @@ def cleanup_targets(root, data):
             errors.append(f"读取下载缓存：{type(exc).__name__}")
             continue
         for path in model_files:
-            if re.fullmatch(r"[A-Za-z0-9_.-]+\.safetensors\.download", path.name):
+            if re.fullmatch(r"[A-Za-z0-9_.-]+\.(?:safetensors|gguf)\.download", path.name):
                 groups["downloads"].append(path)
             elif re.fullmatch(r"[A-Za-z0-9_.-]+\.safetensors\.chunks", path.name) and path.is_dir() and not path.is_symlink():
                 try:
@@ -185,7 +185,7 @@ def storage_inventory(root, data, *, refresh=False):
                             else "layout" if parts[:2] == (".cache", "babeldoc")
                             else "papers" if parts[0] in {"data", "论文PDF"} else "other")
                 row = groups[category]
-                row["bytes"] += info.st_blocks * 512
+                row["bytes"] += getattr(info, "st_blocks", (info.st_size + 511) // 512) * 512
                 row["logical_bytes"] += info.st_size
                 row["files"] += 1
             # Portable app data contains only a link to its runtime. Count the
@@ -200,7 +200,7 @@ def storage_inventory(root, data, *, refresh=False):
                                 "models" if path.is_relative_to(bundle / "Models") else
                                 "layout" if path.is_relative_to(bundle / "LayoutAssets") else "other")
                     row = groups[category]
-                    row["bytes"] += info.st_blocks * 512
+                    row["bytes"] += getattr(info, "st_blocks", (info.st_size + 511) // 512) * 512
                     row["logical_bytes"] += info.st_size
                     row["files"] += 1
             _snapshot = {"software_bytes": sum(r["bytes"] for r in groups.values()), "groups": list(groups.values()),
@@ -248,10 +248,10 @@ def download_cache_guard(root, enabled):
         return
     if not safe_path(root, path):
         raise OSError("下载锁路径不可安全访问")
-    descriptor = os.open(path, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    descriptor = os.open(path, os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0), 0o600)
     with os.fdopen(descriptor, "r+") as handle:
-        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        lock_file(handle.fileno(), blocking=False)
         try:
             yield
         finally:
-            fcntl.flock(handle, fcntl.LOCK_UN)
+            unlock_file(handle.fileno())

@@ -33,6 +33,8 @@ from .resources import memory_usage, release_idle_memory
 from .storage import disk_usage, storage_inventory, clear_optional_files, safe_path, download_cache_guard
 from .review import reading_segments, issue_notes, completion_message
 
+from .paths import CODE_ROOT, WINDOWS, hidden_process
+
 PRECISION_DIR = ROOT / "models" / "qwen3-14b"
 
 DATA = ROOT / "data" / "jobs"
@@ -126,11 +128,11 @@ def home():
 
 @app.get("/api/status")
 def status():
-    files = list(MODEL_DIR.glob("*.safetensors"))
+    files = list(MODEL_DIR.glob("*.gguf" if WINDOWS else "*.safetensors"))
     with state_lock:
         processing = bool(active_operations) or any(j["status"] in {"queued", "running", "exporting"} for j in jobs.values())
         can_cleanup = not processing and install_state["status"] != "running"
-    return {"model_installed": translator.installed(), "model_loaded": translator.model is not None,
+    result = {"model_installed": translator.installed(), "model_loaded": translator.model is not None,
             "memory": memory_usage(), "can_cleanup": can_cleanup,
             "disk": disk_usage(ROOT),
             "model": MODEL_ID, "model_bytes": sum(p.stat().st_size for p in files),
@@ -138,9 +140,21 @@ def status():
             "layout_installed": layout_ready(),
             "issue_navigation": True,
             "repair_available": True,
-            "precision_installed": (PRECISION_DIR / "installation.json").is_file(),
-            "precision_model": "Qwen/Qwen3-14B-MLX-4bit",
+            "precision_installed": precision_installed(),
+            "precision_model": "Qwen/Qwen3-14B-GGUF" if WINDOWS else "Qwen/Qwen3-14B-MLX-4bit",
             "domains": [{"id": k, "name": v["name"]} for k, v in DOMAINS.items()]}
+    result["platform"] = "windows" if WINDOWS else "macos"
+    if WINDOWS:
+        from .windows_models import hardware
+        result["hardware"] = hardware()
+    return result
+
+
+def precision_installed():
+    if WINDOWS:
+        from .windows_models import installed
+        return installed(PRECISION_DIR)
+    return (PRECISION_DIR / "installation.json").is_file()
 
 
 @app.get("/api/desktop/status")
@@ -246,7 +260,7 @@ def start_install():
         return {"status": "complete"}
     with state_lock:
         if install_state["status"] != "running":
-            install_state.update(status="running", message="开始下载约 2.3 GB 的本地模型")
+            install_state.update(status="running", message="开始下载约 2.50 GB 的 4B 本地模型" if WINDOWS else "开始下载约 2.3 GB 的本地模型")
             executor.submit(install_model)
     return copy.deepcopy(install_state)
 
@@ -254,14 +268,15 @@ def start_install():
 def install_full_resources():
     try:
         from scripts.download_model import install
-        if not (PRECISION_DIR / "installation.json").exists():
+        if not precision_installed():
             install(lambda text: install_state.update(message=text),
-                    "Qwen/Qwen3-14B-MLX-4bit", PRECISION_DIR)
+                    "Qwen/Qwen3-14B-GGUF" if WINDOWS else "Qwen/Qwen3-14B-MLX-4bit", PRECISION_DIR)
         if not layout_ready():
             install_state.update(message="正在准备全文排版字体与模型")
-            with (ROOT / "tmp" / "layout-install.log").open("w") as log:
-                subprocess.run([sys.executable, "scripts/install_layout.py"], cwd=ROOT,
-                               stdout=log, stderr=log, check=True)
+            (ROOT / "tmp").mkdir(parents=True, exist_ok=True)
+            with (ROOT / "tmp" / "layout-install.log").open("w", encoding="utf-8") as log:
+                subprocess.run([sys.executable, str(CODE_ROOT / "scripts/install_layout.py")], cwd=ROOT,
+                               stdout=log, stderr=log, check=True, **hidden_process())
         install_state.update(status="complete", message="全文精译资源已就绪，可离线使用")
     except Exception as exc:
         install_state.update(status="failed", message=f"资源下载未完成（{type(exc).__name__}），可重试并继续下载")
@@ -269,7 +284,7 @@ def install_full_resources():
 
 @app.post("/api/resources/install")
 def start_full_install():
-    if layout_ready() and (PRECISION_DIR / "installation.json").exists():
+    if layout_ready() and precision_installed():
         return {"status": "complete"}
     with state_lock:
         if install_state["status"] != "running":
@@ -361,7 +376,7 @@ async def upload(request: Request):
 
 @app.post("/api/demo")
 def demo():
-    sample = ROOT / "examples" / "sci-layout-sample.pdf"
+    sample = CODE_ROOT / "examples" / "sci-layout-sample.pdf"
     if not sample.exists():
         raise HTTPException(404, "示例尚未生成，请运行示例生成脚本")
     return add_document(sample.read_bytes(), "合成论文排版测试.pdf")
@@ -547,7 +562,7 @@ def run_full_translation(job_id, replay=False, repair=False, missing_only=False,
     try:
         with (folder / "full-worker.log").open("a", encoding="utf-8") as log:
             process = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE, stderr=log,
-                                       text=True, bufsize=1)
+                                       text=True, encoding="utf-8", bufsize=1, **hidden_process())
             for line in process.stdout:
                 try:
                     event = json.loads(line)
@@ -671,7 +686,7 @@ def start_translation(job_id: str, settings: Settings):
         raise HTTPException(400, "保守替换模式请配合标准模型；精译模型用于全文段落模式")
     if settings.engine == "full" and not layout_ready():
         raise HTTPException(409, "请先准备全文排版资源")
-    if settings.profile == "precision" and not (PRECISION_DIR / "installation.json").is_file():
+    if settings.profile == "precision" and not precision_installed():
         raise HTTPException(409, "精译模型正在准备，请下载完成后使用，或选择标准模型")
     try:
         terms_for(settings.domain, settings.glossary)

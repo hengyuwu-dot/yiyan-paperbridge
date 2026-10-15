@@ -8,11 +8,11 @@ import urllib.request
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
-import fcntl
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from paperbridge.paths import ROOT, WINDOWS
+from paperbridge.file_lock import lock_file
 os.environ["HF_HOME"] = str(ROOT / ".cache" / "huggingface")
 os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
 os.environ["HF_HUB_DISABLE_XET"] = "1"
@@ -83,11 +83,14 @@ def install(progress=None, model_id=None, model_dir=None):
     with (model_root / ".installation.lock").open("w") as lock:
         if progress:
             progress("正在准备模型；如已有下载任务，会等待它完成")
-        fcntl.flock(lock, fcntl.LOCK_EX)
+        lock_file(lock.fileno())
         return _install(progress, model_id, model_dir)
 
 
 def _install(progress=None, model_id=None, model_dir=None):
+    if WINDOWS:
+        from paperbridge.windows_download import install_gguf
+        return install_gguf(progress, model_dir=model_dir)
     from paperbridge.translator import MODEL_ID as DEFAULT_ID, MODEL_DIR as DEFAULT_DIR
     MODEL_ID = model_id or DEFAULT_ID
     MODEL_DIR = Path(model_dir or DEFAULT_DIR)

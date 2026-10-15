@@ -1,4 +1,4 @@
-"""In-process inference. No model service, HTTP inference or API credentials."""
+"""Local Qwen inference: MLX on Mac and an owned llama.cpp process on Windows."""
 import json
 import hashlib
 import os
@@ -10,8 +10,8 @@ from .glossary import matched_terms, contextual_glossary, normalize_line_hyphens
 from .translation_audit import audit_translation, geometric_scale_relations, english_residues, negation_missing
 from .terminology import atomic_terms, counted_terms, geometric_reference_terms, calendar_terms, multiplicative_terms
 
-ROOT = Path(__file__).resolve().parent.parent
-MODEL_ID = "Qwen/Qwen3-4B-MLX-4bit"
+from .paths import ROOT, WINDOWS
+MODEL_ID = "Qwen/Qwen3-4B-GGUF" if WINDOWS else "Qwen/Qwen3-4B-MLX-4bit"
 MODEL_REVISION = "main"  # Installer records the downloaded snapshot SHA.
 MODEL_DIR = ROOT / "models" / "qwen3-4b"
 os.environ.setdefault("HF_HOME", str(ROOT / ".cache" / "huggingface"))
@@ -229,9 +229,16 @@ class LocalTranslator:
         self.tokenizer = None
         self.lock = threading.RLock()
         from .inference import PromptReuse
-        self.inference = PromptReuse()
+        if WINDOWS:
+            from .gguf_inference import GGUFInference
+            self.inference = GGUFInference(self.model_dir)
+        else:
+            self.inference = PromptReuse()
 
     def installed(self) -> bool:
+        if WINDOWS:
+            from .windows_models import installed
+            return installed(self.model_dir)
         return (self.model_dir / "config.json").is_file() and (self.model_dir / "installation.json").is_file() and bool(list(self.model_dir.glob("*.safetensors")))
 
     def load(self):
@@ -239,6 +246,14 @@ class LocalTranslator:
             return
         if not self.installed():
             raise TranslationError("本地模型尚未安装，请先完成模型下载")
+        if WINDOWS:
+            try:
+                self.inference.load()
+                self.model = self.inference
+                return
+            except Exception as exc:
+                self.inference.close()
+                raise TranslationError(f"本地模型加载失败：{exc}") from exc
         # Only a verified local directory is ever passed to the inference loader.
         os.environ["HF_HUB_OFFLINE"] = "1"
         os.environ["TRANSFORMERS_OFFLINE"] = "1"
@@ -259,6 +274,10 @@ class LocalTranslator:
     def unload(self):
         """Release model and KV tensors before PDF export or when idle."""
         with self.lock:
+            if WINDOWS:
+                self.inference.close()
+                self.model = self.tokenizer = None
+                return
             loaded = self.model is not None
             if loaded:
                 import mlx.core as mx
@@ -274,8 +293,14 @@ class LocalTranslator:
                 mx.clear_cache()
 
     def _generate_json(self, messages: list, max_tokens: int) -> dict:
-        prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, enable_thinking=False)
-        result = self.inference.generate(self.model, self.tokenizer, prompt, max_tokens)
+        if WINDOWS:
+            try:
+                result = self.inference.generate(messages, max_tokens)
+            except Exception as exc:
+                raise TranslationError(f"本地模型推理失败：{exc}") from exc
+        else:
+            prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, enable_thinking=False)
+            result = self.inference.generate(self.model, self.tokenizer, prompt, max_tokens)
         result = re.sub(r"<think>.*?</think>", "", result, flags=re.S).strip()
         result = re.sub(r"^```(?:json)?\s*|\s*```$", "", result).strip()
         try:

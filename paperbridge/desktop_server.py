@@ -5,7 +5,6 @@ owns its own listener and descendants; it never kills a service occupying a port
 """
 import argparse
 import errno
-import fcntl
 import json
 import os
 from pathlib import Path
@@ -20,7 +19,8 @@ from contextlib import contextmanager
 import psutil
 import uvicorn
 
-ROOT = Path(__file__).resolve().parent.parent
+from .paths import ROOT
+from .file_lock import lock_file
 INSTANCE_ENV = "PAPERBRIDGE_DESKTOP_INSTANCE_ID"
 PARENT_ENV = "PAPERBRIDGE_DESKTOP_PARENT_PID"
 
@@ -48,9 +48,9 @@ def bind_listener(ports=range(8765, 8776)):
 def state_lock(path):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor = os.open(str(path) + ".lock", os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+    descriptor = os.open(str(path) + ".lock", os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0), 0o600)
     try:
-        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        lock_file(descriptor)
         yield
     finally:
         os.close(descriptor)
@@ -155,7 +155,7 @@ class DesktopServer(uvicorn.Server):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="译研 macOS 本地服务")
+    parser = argparse.ArgumentParser(description="译研桌面本地服务")
     parser.add_argument("--parent-pid", type=int, required=True)
     parser.add_argument("--state-file", type=Path, required=True)
     arguments = parser.parse_args(argv)

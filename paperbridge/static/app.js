@@ -1,7 +1,7 @@
 const $ = id => document.getElementById(id);
 if (navigator.userAgent.includes('PaperBridgeDesktop')) {
   const nativeVersion = navigator.userAgent.match(/PaperBridgeDesktop\/(\d+\.\d+)/)?.[1];
-  document.querySelector('.version').textContent = `Mac 桌面版 ${nativeVersion && nativeVersion !== '1.0' ? nativeVersion : '1.3'}`;
+  document.querySelector('.version').textContent = `${navigator.userAgent.includes('Windows') ? 'Windows' : 'Mac'} 桌面版 ${nativeVersion && nativeVersion !== '1.0' ? nativeVersion : '1.3'}`;
 }
 const icons = {
  file:'<path d="M14 2H5a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9Z"/><path d="M14 2v7h7M7 13h10M7 17h7"/>',
@@ -165,13 +165,24 @@ async function modelStatus() {
   try {
     currentStatus = await api('/api/status');
     drawResources();
+    const windows = currentStatus.platform === 'windows';
+    $('windowsRequirements').hidden = !windows;
+    if (windows) {
+      $('modelIntro').textContent = '选择适合电脑的本地模型：4B 标准约 2.50GB，14B 精译约 9.00GB。首次下载模型后即可离线翻译。软件优先使用显存充足的 NVIDIA 显卡，也可以使用 CPU。';
+      const h = currentStatus.hardware;
+      const gpu = h?.nvidia_gpus?.map(g => `${g.name} · ${(g.vram_bytes / 1024**3).toFixed(1)}GB 显存`).join('；');
+      $('hardwareSummary').textContent = h ? `这台电脑：${(h.ram_bytes / 1024**3).toFixed(0)}GB 内存 · ${gpu || 'CPU 运行'}` : '正在读取电脑配置';
+      if (!job && !currentStatus.precision_installed) $('profile').value = 'standard';
+      $('prepareFull').textContent = '下载 14B 精译模型（约 9.00GB）';
+      settingsSummary();
+    }
     const ready = currentStatus.model_installed || currentStatus.precision_installed;
     $('modelTitle').textContent = ready ? '本地模型已就绪' : currentStatus.installation.status === 'running' ? '正在下载本地模型' : '尚未安装本地模型';
     $('modelMessage').textContent = ready ? `标准模型${currentStatus.model_installed ? '已就绪' : '尚未准备'} · 精译模型${currentStatus.precision_installed ? '已就绪' : '尚未准备'} · 全文排版${currentStatus.layout_installed ? '已就绪' : '尚未准备'} · 离线运行` : currentStatus.installation.message || '首次下载后，翻译不需要联网';
     $('serviceLabel').textContent = ready ? '本地模型已就绪' : '准备本地模型'; $('modelBadge').classList.remove('offline');
     $('installModel').hidden = currentStatus.model_installed;
     $('installModel').disabled = currentStatus.installation.status === 'running';
-    $('installModel').textContent = currentStatus.installation.status === 'running' ? '模型下载中…' : '下载本地模型（约 2.3 GB）';
+    $('installModel').textContent = currentStatus.installation.status === 'running' ? '模型下载中…' : (windows ? '下载 4B 标准模型（约 2.50GB）' : '下载本地模型（约 2.3 GB）');
     $('prepareFull').hidden = currentStatus.precision_installed && currentStatus.layout_installed;
     $('prepareFull').disabled = currentStatus.installation.status === 'running';
   } catch { $('modelTitle').textContent = '本地服务已断开'; $('modelMessage').textContent = navigator.userAgent.includes('PaperBridgeDesktop') ? '请退出并重新打开“译研”应用' : '请重新打开“译研”应用或 run.command'; $('serviceLabel').textContent = '本机服务未连接'; $('modelBadge').classList.add('offline'); currentStatus.can_cleanup = false; currentStatus.memory = null; drawResources(); }
@@ -353,7 +364,7 @@ async function openJob(document, newDocument = false) {
   const revision = ++viewRevision; openingRequest++; closeModal('documentTermsModal');
   job = document; page = PaperUI.readingPage(localStorage,job.id,job.page_count); targetedSegment = null; pageSegments = []; $('segmentFilter').value = 'all'; $('segmentSearch').value = ''; $('issuePanel').hidden = true; $('issuePanel').open = false; $('issueList').replaceChildren(); $('segmentList').replaceChildren(); $('downloadMenu').hidden = true; setSidebar(false); drawRecent();
   $('translationOptions').open = !job.has_output;
-  $('welcome').hidden = true; $('workspace').hidden = false; $('domain').value = job.settings.domain || 'general'; $('engine').value = job.settings.engine || (job.translated ? 'conservative' : 'full'); $('profile').value = job.settings.profile || (job.translated ? 'standard' : 'precision'); $('pages').value = job.settings.pages || ''; $('polish').checked = job.settings.polish !== false; terms = PaperReader.documentTerms(job.settings, localStorage.getItem('paperbridge.terms') || '', newDocument); $('customTerms').value = terms; history.replaceState(null, '', `/?job=${job.id}`);
+  $('welcome').hidden = true; $('workspace').hidden = false; $('domain').value = job.settings.domain || 'general'; $('engine').value = job.settings.engine || (job.translated ? 'conservative' : 'full'); $('profile').value = job.settings.profile || (currentStatus.platform === 'windows' || job.translated ? 'standard' : 'precision'); $('pages').value = job.settings.pages || ''; $('polish').checked = job.settings.polish !== false; terms = PaperReader.documentTerms(job.settings, localStorage.getItem('paperbridge.terms') || '', newDocument); $('customTerms').value = terms; history.replaceState(null, '', `/?job=${job.id}`);
   $('autoCleanup').checked = job.settings.auto_cleanup !== false;
   settingsSummary(); drawJob(); await updatePage(); if(viewRevision === revision) await updateIssues();
 }

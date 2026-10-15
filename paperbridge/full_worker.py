@@ -27,6 +27,7 @@ from .sections import detect_sections, is_reference_region
 from .translation_audit import audit_translation
 from .review import has_issues, completion_message
 from .translator import ROOT, LocalTranslator, TranslationError
+from .paths import CODE_ROOT, WINDOWS
 from .document_context import (DocumentContext, VERSION as CONTEXT_VERSION, read_source_profile,
                                term_candidates, glossary_entries, active_document_terms, signature)
 
@@ -132,14 +133,18 @@ def run(job_id, replay=False, layout_test=False, repair=False, missing_only=Fals
         raise ValueError("无效的论文编号")
     if not ready():
         raise RuntimeError("请先准备本地排版资源")
-    if not replay and not layout_test:
+    if not replay and not layout_test and not WINDOWS:
         # MLX's process-wide GPU runtime must outlive BabelDOC's temporary
         # translation threads. Initialize it on the main thread, without
         # loading any weights; weights are still loaded only when needed.
         import mlx.core
         import mlx_lm
     initialize()
-    block_network()
+    if WINDOWS:
+        from .gguf_inference import block_external_network
+        block_external_network()
+    else:
+        block_network()
     from .layout_precision import install as preserve_image_precision
     preserve_image_precision()
     # Imports happen only after relocating the dependency's cache into the project.
@@ -159,9 +164,9 @@ def run(job_id, replay=False, layout_test=False, repair=False, missing_only=Fals
     job = json.loads((folder / "job.json").read_text())
     prior_pipeline = job.get("pipeline_version") or (job.get("export_report") or {}).get("pipeline_version") or "legacy"
     prior_code_digest = job.get("pipeline_code_sha256")
-    code_hashes = {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
-                   for path in sorted([*(ROOT / "paperbridge").glob("*.py"),
-                                       *(ROOT / "paperbridge" / "terminology").glob("*.json")])}
+    code_hashes = {str(path.relative_to(CODE_ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
+                   for path in sorted([*(CODE_ROOT / "paperbridge").glob("*.py"),
+                                       *(CODE_ROOT / "paperbridge" / "terminology").glob("*.json")])}
     code_digest = hashlib.sha256(json.dumps(code_hashes, sort_keys=True).encode()).hexdigest()
     job["pipeline_code_sha256"] = code_digest
     job["pipeline_code_files"] = code_hashes
@@ -212,7 +217,7 @@ def run(job_id, replay=False, layout_test=False, repair=False, missing_only=Fals
         return (folder / "cancel.request").exists()
 
     class OfflineAdapter(BaseTranslator):
-        name = "paperbridge-mlx"
+        name = "paperbridge-gguf" if WINDOWS else "paperbridge-mlx"
 
         def __init__(self):
             super().__init__("en", "zh", ignore_cache=True)
@@ -687,7 +692,7 @@ def run(job_id, replay=False, layout_test=False, repair=False, missing_only=Fals
             done = [s for s in candidate if s["exported"]]
             words = sum(count_words(s["source"]) for s in candidate)
             covered = sum(count_words(s["source"]) for s in done)
-            job["export_report"] = {"engine": "BabelDOC 0.6.4 + direct MLX", "pipeline_version": PIPELINE_VERSION, "layout_test": layout_test,
+            job["export_report"] = {"engine": "BabelDOC 0.6.4 + local llama.cpp" if WINDOWS else "BabelDOC 0.6.4 + direct MLX", "pipeline_version": PIPELINE_VERSION, "layout_test": layout_test,
                                     "page_count": len(translated), "original_page_count": job["page_count"],
                                     "page_count_preserved": geometry_ok,
                                     "natural_language_paragraphs": len(candidate), "exported_paragraphs": len(done),
@@ -734,6 +739,7 @@ def run(job_id, replay=False, layout_test=False, repair=False, missing_only=Fals
         save()
         raise
     finally:
+        local.unload()
         pending_export.cleanup()
 
 
