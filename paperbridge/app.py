@@ -153,6 +153,16 @@ def status():
         result["default_profile"] = default_profile()
         result["bundled_models"] = [p for p in ("standard", "precision")
                                     if model_directory(p).parent.name == "Models"]
+    else:
+        try:
+            marker = json.loads((ROOT / "macos-installation.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError):
+            marker = {}
+        preferred = marker.get("default_profile") if isinstance(marker, dict) else None
+        available = {"standard": result["model_installed"], "precision": result["precision_installed"]}
+        result["default_profile"] = preferred if available.get(preferred) else ("precision" if available["precision"] else "standard")
+        result["managed_models"] = bool(marker.get("models_managed_separately")) if isinstance(marker, dict) else False
+        result["app_version"] = os.environ.get("PAPERBRIDGE_APP_VERSION", "development")
     return result
 
 

@@ -1,0 +1,76 @@
+name: Build Mac one-click installer and independent updates
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/macos-oneclick.yml, release-assets/macos-version.json]
+permissions:
+  contents: read
+concurrency:
+  group: macos-oneclick-release
+  cancel-in-progress: false
+jobs:
+  models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Publish pinned models once, reuse them for later application updates
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/publish_macos_oneclick.py models
+  application:
+    runs-on: macos-26
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      HF_HUB_DISABLE_TELEMETRY: '1'
+      HF_HUB_DISABLE_XET: '1'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Prepare pinned standalone runtime and corresponding sources
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish_offline_ci.py bootstrap
+      - name: Install locked runtime and layout resources
+        run: |
+          .cache/python/bin/python3.12 -m venv .venv
+          .venv/bin/python -m pip install --no-cache-dir -r requirements.lock.txt
+          .venv/bin/python scripts/install_layout.py
+      - name: Build, verify first launch, capture real UI and upload model-free app
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: .venv/bin/python scripts/publish_macos_oneclick.py build
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: Mac-oneclick-evidence
+          path: |
+            dist/macos-oneclick/*.json
+            dist/macos-oneclick/screenshots/*.png
+            .cache/macos-first-launch/.cache/desktop/app.log
+          if-no-files-found: warn
+  publish:
+    needs: [models, application]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Make the verified app and model downloads available
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/publish_macos_oneclick.py publish

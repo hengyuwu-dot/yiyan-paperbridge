@@ -23,6 +23,7 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
     var importing = false
     var portable = false
     var bundledModels = false
+    var sharedDataDirectory: String?
     var downloads: [ObjectIdentifier: (temporary: URL, destination: URL)] = [:]
     var activeDownloads = Set<ObjectIdentifier>()
     var downloadNavigation = false
@@ -41,6 +42,7 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
             .flatMap { NSDictionary(contentsOf: $0) }
         portable = config?["Portable"] as? Bool == true
         bundledModels = config?["BundledModels"] as? Bool == true
+        sharedDataDirectory = config?["SharedDataDirectory"] as? String
         if portable {
             do { try preparePortableProject(); start() }
             catch { startupError("准备本地工作室失败：\(error.localizedDescription)") }
@@ -60,7 +62,7 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
         }
         let override = ProcessInfo.processInfo.environment["PAPERBRIDGE_DATA_HOME"]
         root = override.map { URL(fileURLWithPath: $0, isDirectory: true) }
-            ?? fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent(bundledModels ? "PaperBridge-Offline" : "PaperBridge", isDirectory: true)
+            ?? fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent(sharedDataDirectory ?? (bundledModels ? "PaperBridge-Offline" : "PaperBridge"), isDirectory: true)
         try fm.createDirectory(at: root, withIntermediateDirectories: true)
         let engine = resources.appendingPathComponent("Engine")
         let revision = try String(contentsOf: engine.appendingPathComponent("BUILD_ID"), encoding: .utf8)
@@ -208,7 +210,7 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
             return submenu
         }
         _ = menu("译研", [("关于译研", #selector(about), ""), ("-", nil, ""),
-                          ("隐藏译研", #selector(hideApp), "h"), ("退出译研", #selector(quitApp), "q")])
+                          ("检查更新…", #selector(checkForUpdates), ""), ("-", nil, ""), ("隐藏译研", #selector(hideApp), "h"), ("退出译研", #selector(quitApp), "q")])
         _ = menu("文件", [("导入论文 PDF…", #selector(openPDF), "o"), ("打开论文工作室", #selector(home), "1"),
                           ("-", nil, ""), ("在访达中查看导出文件", #selector(showOutput), ""),
                           ("在访达中查看软件目录", #selector(showProject), ""), ("关闭窗口", #selector(closeWindow), "w")])
@@ -225,8 +227,68 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
     }
 
     @objc func about() {
-        NSApp.orderFrontStandardAboutPanel(options: [.applicationName: "译研 PaperBridge", .applicationVersion: portable ? "1.4 · Mac 安装版" : "1.3 · Mac 桌面版",
+        NSApp.orderFrontStandardAboutPanel(options: [.applicationName: "译研 PaperBridge", .applicationVersion: (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "") + " · Mac 桌面版",
             .credits: NSAttributedString(string: "SCI 论文英译中 · 本地模型 · 原译对照\n" + (portable ? "论文始终在本机处理，支持内置模型离线使用。" : "模型和论文保存在原软件目录。"))])
+    }
+    @objc func checkForUpdates() {
+        guard let base = service, ready else { alert("正在启动", "请等待工作室准备好后检查更新。"); return }
+        network.dataTask(with: base.appendingPathComponent("api/desktop/status")) { data, _, _ in
+            let state = data.flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+            DispatchQueue.main.async {
+                guard state?["busy"] as? Bool == false else { self.alert("论文正在处理", "请等待当前论文完成后更新，已保存的内容会保留。"); return }
+                self.lookupUpdate()
+            }
+        }.resume()
+    }
+    func lookupUpdate() {
+        guard let resources = Bundle.main.resourceURL else { return }
+        let channel = URL(string: "https://raw.githubusercontent.com/hengyuwu-dot/yiyan-paperbridge/main/release-assets/macos-update.json")!
+        let session = URLSession(configuration: .ephemeral)
+        session.dataTask(with: channel) { data, response, error in
+            guard (response as? HTTPURLResponse)?.statusCode == 200,
+                  let data = data, let feed = try? JSONSerialization.jsonObject(with: data) as? [String:Any], feed["schema"] as? Int == 1,
+                  let text = feed["manifest_url"] as? String,
+                  text.hasPrefix("https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/"), let url = URL(string:text) else {
+                DispatchQueue.main.async { self.alert("暂时无法检查更新", "请连接网络后重试。已安装的版本可以继续离线使用。") }; return
+            }
+            session.dataTask(with:url) { body, response, _ in
+                guard (response as? HTTPURLResponse)?.statusCode == 200, let body = body,
+                      let release = try? JSONSerialization.jsonObject(with:body) as? [String:Any],
+                      release["schema"] as? Int == 1, let version = release["version"] as? String,
+                      version.range(of:"^\\d+\\.\\d+\\.\\d+$",options:.regularExpression) != nil else {
+                    DispatchQueue.main.async {self.alert("暂时无法检查更新","请稍后重试。")}; return
+                }
+                DispatchQueue.main.async {
+                    let current = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+                    guard version.compare(current,options:.numeric) == .orderedDescending else {self.alert("已是最新版本", "译研 \(current) · 本地模型将继续保留。");return}
+                    let prompt = NSAlert();prompt.messageText = "发现译研 \(version)";prompt.informativeText = "更新只下载应用与运行环境，保留已安装模型、论文和设置。";prompt.addButton(withTitle:"下载并更新");prompt.addButton(withTitle:"稍后")
+                    guard prompt.runModal() == .alertFirstButtonReturn else {return}
+                    do {
+                        let cache = FileManager.default.urls(for:.cachesDirectory,in:.userDomainMask)[0].appendingPathComponent("PaperBridgeUpdater/"+UUID().uuidString)
+                        try FileManager.default.createDirectory(at:cache,withIntermediateDirectories:true)
+                        let helper = cache.appendingPathComponent("安装译研.app")
+                        try FileManager.default.copyItem(at:resources.appendingPathComponent("Updater.app"),to:helper)
+                        let config = NSWorkspace.OpenConfiguration();config.arguments = ["--update","--destination",Bundle.main.bundleURL.path,"--data",self.root.path]
+                        NSWorkspace.shared.openApplication(at:helper,configuration:config) { _,error in DispatchQueue.main.async {if let error=error {self.alert("更新未能启动",error.localizedDescription)}else{NSApp.terminate(nil)}} }
+                    } catch {self.alert("更新未能启动",error.localizedDescription)}
+                }
+            }.resume()
+        }.resume()
+    }
+    func captureSmoke() {
+        DispatchQueue.main.asyncAfter(deadline:.now()+1) {
+            self.web.takeSnapshot(with:nil) { image,error in
+                let folder=self.root.appendingPathComponent(".cache/desktop")
+                if let image=image, let tiff=image.tiffRepresentation,let bitmap=NSBitmapImageRep(data:tiff),let data=bitmap.representation(using:.png,properties:[:]) {try? data.write(to:folder.appendingPathComponent("macos-ui-smoke.png"))}
+                guard let service=self.service else {exit(1)}
+                self.network.dataTask(with:service.appendingPathComponent("api/status")) { data,response,_ in
+                    var record:[String:Any] = ["loaded":error==nil,"version":Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "","workspace":self.root.path]
+                    if let data=data,let status=try? JSONSerialization.jsonObject(with:data) {record["status"]=status}
+                    if let encoded=try? JSONSerialization.data(withJSONObject:record,options:[.prettyPrinted,.sortedKeys]) {try? encoded.write(to:folder.appendingPathComponent("macos-ui-smoke.json"))}
+                    DispatchQueue.main.async {NSApp.terminate(nil)}
+                }.resume()
+            }
+        }
     }
     @objc func hideApp() { NSApp.hide(nil) }
     @objc func quitApp() { NSApp.terminate(nil) }
@@ -327,6 +389,8 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
                                  "--state-file", cache.appendingPathComponent("server.json").path]
             var env = ProcessInfo.processInfo.environment
             env["PYTHONUNBUFFERED"] = "1"
+            env["PAPERBRIDGE_HOME"] = root.path
+            env["PAPERBRIDGE_APP_VERSION"] = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
             if portable, let resources = Bundle.main.resourceURL {
                 env["PAPERBRIDGE_BUNDLE_RESOURCES"] = resources.path
                 // Keep the signed application read-only, including imported
@@ -383,6 +447,7 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         ready = true; splash.isHidden = true; web.isHidden = false; spinner.stopAnimation(nil)
         importNext()
+        if CommandLine.arguments.contains("--smoke-test") { captureSmoke() }
     }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         // WebKit deliberately cancels frame navigation when handing a response

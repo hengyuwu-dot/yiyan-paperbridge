@@ -17,6 +17,7 @@ def main():
     parser.add_argument("--portable", action="store_true", help="Build the shell for the redistributable bundled runtime")
     parser.add_argument("--output", type=Path, help="Alternative app output path")
     parser.add_argument("--offline-models", action="store_true")
+    parser.add_argument("--version", default="1.4.0")
     args = parser.parse_args()
     if args.portable:
         APP = ROOT / "dist" / "release" / "译研.app"
@@ -46,7 +47,7 @@ def main():
     info = {
         "CFBundleName": "译研", "CFBundleDisplayName": "译研", "CFBundleIdentifier": "local.paperbridge.desktop",
         "CFBundleExecutable": "PaperBridge", "CFBundlePackageType": "APPL", "CFBundleIconFile": "AppIcon",
-        "CFBundleShortVersionString": "1.4.0" if args.portable else "1.3.0", "CFBundleVersion": "14" if args.portable else "13",
+        "CFBundleShortVersionString": args.version if args.portable else "1.3.0", "CFBundleVersion": args.version.replace(".", ""),
         "LSMinimumSystemVersion": "26.2" if args.portable else "12.0",
         "NSHighResolutionCapable": True, "NSSupportsAutomaticGraphicsSwitching": True,
         "NSPrincipalClass": "NSApplication", "CFBundleDevelopmentRegion": "zh_CN",

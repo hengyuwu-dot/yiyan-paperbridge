@@ -121,7 +121,7 @@ def main():
     # Remove only this script's previous app output; leave all other files alone.
     if APP.exists():
         shutil.rmtree(APP)
-    build_args = ['--portable', '--output', APP] + (['--offline-models'] if args.include_models else [])
+    build_args = ['--portable', '--output', APP, '--version', VERSION] + (['--offline-models'] if args.include_models else [])
     run(sys.executable, ROOT / 'scripts/build_macos.py', *build_args, cwd=ROOT)
     resources = APP / 'Contents/Resources'
     source = RELEASE / 'PaperBridge-Source'

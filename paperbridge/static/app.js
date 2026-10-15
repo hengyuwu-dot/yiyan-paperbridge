@@ -1,3 +1,4 @@
+let profileInitialized = false;
 const $ = id => document.getElementById(id);
 if (navigator.userAgent.includes('PaperBridgeDesktop')) {
   const nativeVersion = navigator.userAgent.match(/PaperBridgeDesktop\/(\d+\.\d+)/)?.[1];
@@ -172,10 +173,11 @@ async function modelStatus() {
       const h = currentStatus.hardware;
       const gpu = h?.nvidia_gpus?.map(g => `${g.name} · ${(g.vram_bytes / 1024**3).toFixed(1)}GB 显存`).join('；');
       $('hardwareSummary').textContent = h ? `这台电脑：${(h.ram_bytes / 1024**3).toFixed(0)}GB 内存 · ${gpu || 'CPU 运行'}` : '正在读取电脑配置';
-      if (!job) $('profile').value = currentStatus.default_profile || 'standard';
       $('prepareFull').textContent = '下载 14B 精译模型（约 9.00GB）';
       settingsSummary();
     }
+    if (!job && !profileInitialized && currentStatus.default_profile) { $('profile').value = currentStatus.default_profile; profileInitialized = true; settingsSummary(); }
+    if (!windows && currentStatus.managed_models) $('modelIntro').textContent = '模型保存在本机，更新软件时继续保留。已准备好的模型和全文排版资源可以直接离线使用。';
     const ready = currentStatus.model_installed || currentStatus.precision_installed;
     $('modelTitle').textContent = ready ? '本地模型已就绪' : currentStatus.installation.status === 'running' ? '正在下载本地模型' : '尚未安装本地模型';
     $('modelMessage').textContent = ready ? `标准模型${currentStatus.model_installed ? '已就绪' : '尚未准备'} · 精译模型${currentStatus.precision_installed ? '已就绪' : '尚未准备'} · 全文排版${currentStatus.layout_installed ? '已就绪' : '尚未准备'} · 离线运行` : currentStatus.installation.message || '首次下载后，翻译不需要联网';
