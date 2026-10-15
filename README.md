@@ -78,7 +78,7 @@ light curve = 光变曲线
 
 ## Windows 版：选好模型，一键安装
 
-![Windows 论文工作室](docs/images/windows-workspace.png)
+![Windows 一键安装：选择 4B 或 14B](docs/images/windows-setup.png)
 
 **[下载 Windows 一键安装器](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)** · [安装与使用教程](docs/WINDOWS_INSTALL.md)
 
