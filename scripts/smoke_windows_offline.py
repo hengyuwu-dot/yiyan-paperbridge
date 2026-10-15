@@ -4,10 +4,13 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import textwrap
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
     parser = argparse.ArgumentParser()
     parser.add_argument("profile", choices=("standard", "precision"))
     parser.add_argument("--bundle", type=Path, required=True)

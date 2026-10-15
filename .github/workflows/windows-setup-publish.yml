@@ -1,0 +1,75 @@
+name: Publish verified Windows one-click installer
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Build and verify Windows one-click setup]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: windows-oneclick-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.id == 38730462805
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERIFIED_RUN: '38730462805'
+      VERIFIED_SHA: 5e33f3d6b9b881edefde074d43ce3f6f54aacece
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Verify provenance of the Windows build
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$VERIFIED_RUN" > run.json
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$VERIFIED_RUN/jobs" > jobs.json
+          python - <<'PY'
+          import json, os
+          run=json.load(open('run.json')); jobs=json.load(open('jobs.json'))['jobs']
+          assert run['head_sha']==os.environ['VERIFIED_SHA'] and run['status']=='completed'
+          assert run['head_branch']=='main' and run['event']=='push'
+          assert next(j for j in jobs if j['name']=='build')['conclusion']=='success'
+          assert next(j for j in jobs if j['name']=='validate (precision, 14B)')['conclusion']=='success'
+          standard=next(j for j in jobs if j['name']=='validate (standard, 4B)')
+          assert standard['status']=='completed'
+          for name in ('Run the actual GUI download-and-install button','Verify the installed model equals the pinned official weights','Deny external app traffic and verify first offline launch'):
+              assert next(s for s in standard['steps'] if s['name']==name)['conclusion']=='success'
+          PY
+      - uses: actions/download-artifact@v6
+        with:
+          run-id: 38730462805
+          github-token: ${{ github.token }}
+          path: verified
+      - name: Verify native installation and actual offline PDF reports
+        run: |
+          python - <<'PY'
+          import json, pathlib, shutil
+          root=pathlib.Path('verified'); out=pathlib.Path('dist/release');out.mkdir(parents=True)
+          for label,profile in [('4B','standard'),('14B','precision')]:
+              path=next(root.rglob(f'WINDOWS-ONECLICK-{label}-REPORT.json'))
+              report=json.loads(path.read_text(encoding='utf-8-sig'))
+              assert report['status']=='complete' and report['profile']==profile
+              for field in ('all_files_verified','automatic_install','cache_cleaned','offline_first_launch_verified','installed_model_sha256_verified'): assert report[field] is True
+              shutil.copy2(path,out/path.name)
+          pdf=next(root.rglob('WINDOWS-OFFLINE-SMOKE-REPORT.json'))
+          report=json.loads(pdf.read_text(encoding='utf-8-sig'))
+          assert report['edition']=='standard' and report['status']=='complete'
+          for field in ('downloads_forbidden','model_in_install_directory','has_chinese_pdf','structure_passed'): assert report[field] is True
+          assert report['export_report']['structural_checks_passed'] is True
+          assert report['export_report']['network_blocked_during_translation'] is True
+          shutil.copy2(pdf,out/pdf.name)
+          for name in ('Yiyan-Windows-OneClick-Setup.exe','windows-setup-4b.png','windows-setup-14b.png'):
+              shutil.copy2(next(root.rglob(name)),out/name)
+          shutil.copy2('docs/WINDOWS_INSTALL.md',out/'WINDOWS_INSTALL.md')
+          (out/'BUILD-PROVENANCE.json').write_text(json.dumps({'build_commit':'5e33f3d6b9b881edefde074d43ce3f6f54aacece','windows_run':38730462805,'downloader_checks_passed':9,'both_native_installs_and_offline_launches_verified':True,'actual_offline_pdf_verified':True,'console_encoding_corrected_in_source':True},indent=2)+'\n')
+          PY
+          cd dist/release
+          sha256sum * > SHA256SUMS.txt
+          gh release create v1.7.0-windows-setup --repo "$GITHUB_REPOSITORY" --target "$VERIFIED_SHA" --title '译研 · Windows 一键安装 · 4B / 14B 自选' --notes-file ../../docs/RELEASE_v1.7.0_WINDOWS_SETUP.md --latest=false --draft
+          gh release upload v1.7.0-windows-setup --repo "$GITHUB_REPOSITORY" ./*
+          gh release edit v1.7.0-windows-setup --repo "$GITHUB_REPOSITORY" --draft=false --latest=false
