@@ -1,5 +1,5 @@
 name: Build Mac one-click installer and independent updates
-# Verify the modern per-session direct policy without changing system settings.
+# Verify explicit session networking; system settings remain unchanged.
 on:
   workflow_dispatch:
   push:

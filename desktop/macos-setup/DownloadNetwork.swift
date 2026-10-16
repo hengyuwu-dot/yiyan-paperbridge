@@ -6,10 +6,11 @@ func installerNetworkConfiguration() -> URLSessionConfiguration {
     let config=URLSessionConfiguration.ephemeral
     config.connectionProxyDictionary=["HTTPEnable":0,"HTTPSEnable":0,"SOCKSEnable":0,"ProxyAutoConfigEnable":0,"ProxyAutoDiscoveryEnable":0,"ExceptionsList":["*"],"ExcludeSimpleHostnames":1]
     if #available(macOS 14.0, *) {
-        // An explicit proxy policy with every domain excluded prevents fallback
-        // to system defaults in the modern Network.framework loading stack.
+        // A nonmatching explicit policy prevents inheriting the system policy.
+        // .invalid is reserved and no download URL can match this suffix.
         var direct=ProxyConfiguration(httpCONNECTProxy:.hostPort(host:"localhost",port:9))
-        direct.excludedDomains=["*"]
+        direct.matchDomains=["paperbridge-no-proxy.invalid"]
+        direct.allowFailover=true
         config.proxyConfigurations=[direct]
     }
     config.timeoutIntervalForRequest=15
