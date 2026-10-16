@@ -6,11 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>Yiyan-Windows-OneClick-Setup</AssemblyName>
-    <Version>1.7.0</Version>
+    <Version>1.9.0</Version>
     <Product>译研一键安装</Product>
     <ApplicationIcon>../windows/AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../windows-update/UpdateCore.cs" Link="UpdateCore.cs" />
+    <EmbeddedResource Include="../../.cache/windows-update-build/Yiyan-Updater.exe.gz" LogicalName="PaperBridgeSetup.Updater.gz" Condition="Exists('../../.cache/windows-update-build/Yiyan-Updater.exe.gz')" />
     <EmbeddedResource Include="packages.json" LogicalName="PaperBridgeSetup.packages.json" />
     <EmbeddedResource Include="UiFont.ttf" LogicalName="PaperBridgeSetup.UiFont.ttf" />
     <EmbeddedResource Include="LICENSES.txt" LogicalName="PaperBridgeSetup.LICENSES.txt" />

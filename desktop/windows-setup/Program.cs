@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.IO.Compression;
+using PaperBridgeUpdate;
 
 namespace PaperBridgeSetup;
 
@@ -34,7 +36,7 @@ internal sealed class SetupWindow : Form
     readonly Button pause = new() { Text = "暂停下载", Width = 112, Height = 46, Enabled = false };
     readonly Button browse = new() { Text = "更改位置", Width = 90, Dock = DockStyle.Right };
     readonly PrivateFontCollection fonts = new();
-    readonly HttpClient http = new(new HttpClientHandler { MaxConnectionsPerServer = 3 }) { Timeout = TimeSpan.FromMinutes(2) };
+    readonly HttpClient http = UpdateNetwork.Client();
     readonly string cacheRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PaperBridge", "InstallerCache");
     readonly string? smokeProfile, evidence, preview;
     readonly Stopwatch elapsed = new();
@@ -96,7 +98,7 @@ internal sealed class SetupWindow : Form
         pause.FlatStyle = FlatStyle.Flat; pause.FlatAppearance.BorderColor = Color.FromArgb(200, 216, 202);
         actions.Controls.Add(start); actions.Controls.Add(pause); root.Controls.Add(actions, 0, 6);
         var footer = new Panel { Dock = DockStyle.Fill };
-        footer.Controls.Add(new Label { Text = "译研 PaperBridge · 安装向导 1.7", AutoSize = true, ForeColor = Color.DimGray, Location = new Point(0, 5) });
+        footer.Controls.Add(new Label { Text = "译研 PaperBridge · 安装与更新向导 · 后续更新保留模型", AutoSize = true, ForeColor = Color.DimGray, Location = new Point(0, 5) });
         var license = new LinkLabel { Text = "开源许可", AutoSize = true, Dock = DockStyle.Right, LinkColor = green };
         license.LinkClicked += (_, _) => ShowLicenses(); footer.Controls.Add(license); root.Controls.Add(footer, 0, 7);
         standard.CheckedChanged += (_, _) => { if (standard.Checked && precision.Checked) precision.Checked = false; RefreshChoice(); };
@@ -118,6 +120,11 @@ internal sealed class SetupWindow : Form
                 await Task.Delay(300); CaptureWindow(evidence!, "setup-selected.png"); start.PerformClick();
             }
         };
+        if(smokeProfile is null&&preview is null){
+            try{using var known=JsonDocument.Parse(File.ReadAllText(Path.Combine(destination.Text,"BUILD-REPORT.json")));if(known.RootElement.TryGetProperty("edition",out var saved)&&saved.GetString()=="precision"){standard.Checked=false;precision.Checked=true;}}
+            catch(Exception e)when(e is IOException or JsonException){}
+        }
+        destination.TextChanged+=(_,_)=>RefreshChoice();RefreshChoice();
     }
 
     Font MakeFont(float size) => new(fonts.Families[0], size, FontStyle.Regular, GraphicsUnit.Point);
@@ -130,7 +137,7 @@ internal sealed class SetupWindow : Form
         card.Controls.Add(text); card.Controls.Add(choice); return card;
     }
 
-    void RefreshChoice() { if (!standard.Checked && !precision.Checked) return; installed = false; if (!working) start.Text = "下载并安装 " + (precision.Checked ? "14B" : "4B"); }
+    void RefreshChoice() { if (!standard.Checked && !precision.Checked) return; installed = false; if (!working){bool reused=false;try{reused=ExistingModel(Selected,destination.Text)&&File.Exists(Path.Combine(destination.Text,"Yiyan.exe"));}catch{}start.Text=reused?"更新应用，保留 "+Selected.Label:"下载并安装 "+(precision.Checked?"14B":"4B");if(reused)detail.Text="检测到已安装的模型，本次只更新应用。";} }
     void EnableChoices(bool enabled) { standard.Parent!.Enabled = precision.Parent!.Enabled = enabled; standard.Enabled = precision.Enabled = destination.Enabled = browse.Enabled = clearCache.Enabled = openApp.Enabled = enabled; }
     void CaptureWindow(string folder, string name) { Directory.CreateDirectory(folder); using var bitmap = new Bitmap(Width, Height); DrawToBitmap(bitmap, new Rectangle(0, 0, Width, Height)); bitmap.Save(Path.Combine(folder, name), System.Drawing.Imaging.ImageFormat.Png); }
     void WriteState(object state)
@@ -153,7 +160,8 @@ internal sealed class SetupWindow : Form
             Directory.CreateDirectory(cacheRoot);
             try { installationLock = new FileStream(Path.Combine(cacheRoot, ".installer.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
             catch (IOException) { throw new IOException("另一个安装向导正在工作，请先完成或关闭它再继续。"); }
-            InstallPaths.CheckSpace(edition, folder, target);
+            bool reuse=ExistingModel(edition,target)&&File.Exists(Path.Combine(target,"Runtime","Python","python.exe"))&&File.Exists(Path.Combine(target,"Yiyan.exe"));
+            if(!reuse)InstallPaths.CheckSpace(edition, folder, target);
             Directory.CreateDirectory(target);
             using (new FileStream(Path.Combine(target, ".paperbridge-write-test-" + Guid.NewGuid().ToString("N")), FileMode.CreateNew, FileAccess.Write, FileShare.None, 1, FileOptions.DeleteOnClose)) { }
             foreach (var process in Process.GetProcessesByName("Yiyan"))
@@ -165,6 +173,7 @@ internal sealed class SetupWindow : Form
                         throw new IOException("请先退出正在运行的译研，再点击继续安装。");
                 }
             }
+            if(reuse){installing=true;pause.Enabled=false;status.Text="已有模型将保留，正在更新应用…";await UpdateApplication(target,token);SetEdition(target,edition.Profile);installed=true;installerExit=0;bar.Value=1000;status.Text="更新完成，模型与论文已保留。";detail.Text="现在可以继续离线使用。";start.Text="打开译研";WriteCompletion(edition,target,true);if(openApp.Checked)LaunchApp();return;}
             positions = new long[edition.Files.Length]; elapsed.Restart(); lastUpdate = 0; lastBytes = 0; speed = 0;
             var reporter = new Progress<(long bytes, string stage)>(p => {
                 if (installing || !working) return;
@@ -173,7 +182,7 @@ internal sealed class SetupWindow : Form
                 detail.Text = $"{p.bytes / 1e9:0.00} / {edition.TotalBytes / 1e9:0.00} GB" + (speed > 0 ? $" · {speed / 1e6:0.0} MB/s" : "");
                 WriteState(new { stage = "downloading", profile = edition.Profile, bytes = p.bytes, total_bytes = edition.TotalBytes, elapsed_seconds = elapsed.Elapsed.TotalSeconds });
             });
-            var downloader = new Downloader(http);
+            var downloader = new Downloader(http,chooseUrl:UpdateNetwork.BinaryUrl,networkTimeout:TimeSpan.FromSeconds(30));
             await Parallel.ForEachAsync(Enumerable.Range(0, edition.Files.Length), new ParallelOptions { MaxDegreeOfParallelism = 2, CancellationToken = token }, async (index, ct) => {
                 await downloader.DownloadAsync(edition.Files[index], folder, update => {
                     Interlocked.Exchange(ref positions[index], update.Bytes);
@@ -202,6 +211,8 @@ internal sealed class SetupWindow : Form
             string model = Path.Combine(target, "Models", edition.Profile == "precision" ? "qwen3-14b" : "qwen3-4b", edition.ModelFile);
             if (!File.Exists(model) || new FileInfo(model).Length != edition.ModelBytes) throw new IOException("模型文件尚未安装完整，请点击继续重试。");
             ApplyEditionPreference(target);
+            status.Text="模型已就绪，正在接入当前应用版本…";
+            await UpdateApplication(target,token);SetEdition(target,edition.Profile);
             if (clearCache.Checked)
                 foreach (var f in edition.Files) { try { File.Delete(Path.Combine(folder, f.Name)); File.Delete(Path.Combine(folder, f.Name + ".partial")); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
             bool cleaned = edition.Files.All(f => !File.Exists(Path.Combine(folder, f.Name)));
@@ -209,7 +220,7 @@ internal sealed class SetupWindow : Form
             detail.Text = installerExit == 3010 ? "Windows 提示需要重启，请重启电脑后打开译研。" : "模型已就绪，打开译研，导入论文即可开始。";
             start.Text = "打开译研";
             start.Enabled = true;
-            var report = new { status = "complete", profile = edition.Profile, installer_exit_code = installerExit, all_files_verified = true,
+            var report = new { status = "complete", profile = edition.Profile, version=InstalledVersion(target),models_preserved=true,application_update_complete=true,installer_exit_code = installerExit, all_files_verified = true,
                 files_verified = edition.Files.Length, download_bytes = edition.TotalBytes, automatic_install = true,
                 cache_cleaned = cleaned, destination = target, elapsed_seconds = Math.Round(elapsed.Elapsed.TotalSeconds, 1) };
             WriteState(report);
@@ -230,6 +241,30 @@ internal sealed class SetupWindow : Form
             if (smokeProfile is not null || closeAfterPause) { await Task.Delay(500); Close(); }
         }
     }
+
+    static bool ExistingModel(Edition edition,string target)
+    {
+        string name=edition.Profile=="precision"?"qwen3-14b":"qwen3-4b";
+        foreach(string directory in new[]{Path.Combine(target,"Models",name),Path.Combine(PersonalData,"models",name)}){
+            try{using var marker=JsonDocument.Parse(File.ReadAllText(Path.Combine(directory,"installation.json")));if(new FileInfo(Path.Combine(directory,edition.ModelFile)).Length==edition.ModelBytes&&marker.RootElement.GetProperty("sha256").GetString()==edition.ModelSha256)return true;}catch(Exception e)when(e is IOException or JsonException or KeyNotFoundException){}
+        }return false;
+    }
+    async Task UpdateApplication(string target,CancellationToken token)
+    {
+        string folder=Path.Combine(cacheRoot,"Updater",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(folder);string updater=Path.Combine(folder,"Yiyan-Updater.exe");
+        using(var resource=typeof(SetupWindow).Assembly.GetManifestResourceStream("PaperBridgeSetup.Updater.gz")??throw new IOException("更新组件缺失，请重新下载一键安装器。"))
+        using(var gzip=new GZipStream(resource,CompressionMode.Decompress))await using(var output=File.Create(updater))await gzip.CopyToAsync(output,token);
+        var start=new ProcessStartInfo(updater){UseShellExecute=false};
+        foreach(string arg in new[]{"--auto","--no-launch","--destination",target,"--data",PersonalData,"--evidence",evidence is null?Path.Combine(folder,"result"):Path.Combine(evidence,"ApplicationUpdate")})start.ArgumentList.Add(arg);
+        if(smokeProfile is not null)start.ArgumentList.Add("--update-smoke");
+        using var child=Process.Start(start)??throw new IOException("更新组件未能启动。");await child.WaitForExitAsync();if(child.ExitCode!=0)throw new IOException("应用更新尚未完成，请重新点击继续；已经安装的模型会保留。");
+        string report=Path.Combine(evidence is null?Path.Combine(folder,"result"):Path.Combine(evidence,"ApplicationUpdate"),"WINDOWS-UPDATE-REPORT.json");
+        using var completed=JsonDocument.Parse(File.ReadAllText(report));if(completed.RootElement.GetProperty("status").GetString()!="complete")throw new IOException("应用更新尚未完成，请点击继续。");
+    }
+    static string PersonalData=>Environment.GetEnvironmentVariable("PAPERBRIDGE_HOME")??Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"PaperBridge");
+    static void SetEdition(string target,string profile){string p=Path.Combine(target,"BUILD-REPORT.json");var d=JsonSerializer.Deserialize<Dictionary<string,JsonElement>>(File.ReadAllText(p))!;d["edition"]=JsonSerializer.SerializeToElement(profile);File.WriteAllText(p,JsonSerializer.Serialize(d,new JsonSerializerOptions{WriteIndented=true}));}
+    static string InstalledVersion(string target){using var d=JsonDocument.Parse(File.ReadAllText(Path.Combine(target,"BUILD-REPORT.json")));return d.RootElement.GetProperty("version").GetString()!;}
+    void WriteCompletion(Edition edition,string target,bool reused){var report=new{status="complete",profile=edition.Profile,version=InstalledVersion(target),existing_model_reused=reused,models_preserved=true,application_update_complete=true,destination=target};WriteState(report);if(evidence is not null){File.WriteAllText(Path.Combine(evidence,"SETUP-REPORT.json"),JsonSerializer.Serialize(report));CaptureWindow(evidence,"setup-complete.png");}}
 
     void LaunchApp() { try { Process.Start(new ProcessStartInfo(Path.Combine(destination.Text, "Yiyan.exe")) { UseShellExecute = true }); } catch (Exception e) { detail.Text = "请从桌面打开译研。"; log.AppendLine(e.ToString()); } }
     static void ApplyEditionPreference(string target)

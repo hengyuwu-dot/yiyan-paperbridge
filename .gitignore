@@ -19,4 +19,6 @@ output/
 examples/*.pdf
 .env
 .env.*
+desktop/**/bin/
+desktop/**/obj/
 release-assets/vendor-sources/

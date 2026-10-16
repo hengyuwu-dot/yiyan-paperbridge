@@ -6,12 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>Yiyan</AssemblyName>
-    <Version>1.5.0</Version>
+    <Version>1.9.0</Version>
     <Product>译研 PaperBridge</Product>
     <Description>本地 SCI 论文翻译与中英对照阅读</Description>
     <ApplicationIcon>AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../windows-update/UpdateCore.cs" Link="UpdateCore.cs" />
+    <Compile Include="../windows-setup/Download.cs" Link="Download.cs" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
   </ItemGroup>
 </Project>

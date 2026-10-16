@@ -46,7 +46,8 @@ public static class Packages
 
 public readonly record struct Transfer(long Bytes, string Stage);
 
-public sealed class Downloader(HttpClient http, Func<int, CancellationToken, Task>? retryDelay = null)
+public sealed class Downloader(HttpClient http, Func<int, CancellationToken, Task>? retryDelay = null,
+    Func<Asset,int,string>? chooseUrl = null, TimeSpan? networkTimeout = null)
 {
     public static async Task<string> HashAsync(string path, CancellationToken token = default)
     {
@@ -90,9 +91,11 @@ public sealed class Downloader(HttpClient http, Func<int, CancellationToken, Tas
                 }
                 if (offset < asset.Bytes)
                 {
-                    using var request = new HttpRequestMessage(HttpMethod.Get, asset.Url);
+                    using var request = new HttpRequestMessage(HttpMethod.Get, chooseUrl?.Invoke(asset,attempt) ?? asset.Url);
                     if (offset > 0) request.Headers.Range = new RangeHeaderValue(offset, null);
-                    using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
+                    using var headerTimeout=CancellationTokenSource.CreateLinkedTokenSource(token);headerTimeout.CancelAfter(networkTimeout??TimeSpan.FromSeconds(90));
+                    using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, headerTimeout.Token);
+                    headerTimeout.CancelAfter(Timeout.InfiniteTimeSpan);
                     response.EnsureSuccessStatusCode();
                     if (response.StatusCode == HttpStatusCode.PartialContent)
                     {
@@ -115,7 +118,7 @@ public sealed class Downloader(HttpClient http, Func<int, CancellationToken, Tas
                     long received = offset;
                     while (true)
                     {
-                        idle.CancelAfter(TimeSpan.FromSeconds(90));
+                        idle.CancelAfter(networkTimeout??TimeSpan.FromSeconds(90));
                         int read = await input.ReadAsync(buffer, idle.Token);
                         if (read == 0) break;
                         if (received + read > asset.Bytes) throw new InvalidDataException("下载文件超出清单大小");

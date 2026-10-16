@@ -1,0 +1,13 @@
+# 译研 · Windows 一键安装与应用更新
+
+**[下载 Windows 一键安装器](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v{VERSION}-windows-update/Yiyan-Windows-OneClick-Setup.exe)** · **[已有译研，下载更新工具](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v{VERSION}-windows-update/Yiyan-Updater.exe)**
+
+新电脑选择 **4B 或 14B** 后点击安装，完整环境准备好即可离线使用。已经安装的用户运行新版安装器或更新工具，继续使用原有模型。
+
+软件菜单 **软件 → 检查更新** 可以获取后续版本。普通更新只下载应用包，保留 4B / 14B 模型、论文、译稿、词表和设置，也复用原来的推理与阅读环境。
+
+支持断点续传、文件大小与 SHA256 校验；替换应用时保留临时备份，更新失败自动恢复。下载连接独立于系统代理，并支持备用加速线路。
+
+应用更新包不包含模型权重。模型继续保存在原有安装目录的 `Models` 或个人资料中的模型目录；论文与设置继续使用原工作室。
+
+[Windows 安装和更新教程](https://github.com/hengyuwu-dot/yiyan-paperbridge/blob/main/docs/WINDOWS_INSTALL.md) · [更新发布说明](https://github.com/hengyuwu-dot/yiyan-paperbridge/blob/main/docs/WINDOWS_RELEASE_MAINTENANCE.md)

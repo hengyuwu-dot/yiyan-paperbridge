@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net8.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>Yiyan-Updater</AssemblyName>
+    <Version>1.9.0</Version><ApplicationIcon>../windows/AppIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../windows-setup/Download.cs" Link="Download.cs" />
+    <EmbeddedResource Include="../windows-setup/UiFont.ttf" LogicalName="PaperBridgeUpdate.UiFont.ttf" />
+  </ItemGroup>
+</Project>

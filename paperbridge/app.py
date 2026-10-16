@@ -147,6 +147,7 @@ def status():
             "precision_model": "Qwen/Qwen3-14B-GGUF" if WINDOWS else "Qwen/Qwen3-14B-MLX-4bit",
             "domains": [{"id": k, "name": v["name"]} for k, v in DOMAINS.items()]}
     result["platform"] = "windows" if WINDOWS else "macos"
+    result["app_version"] = os.environ.get("PAPERBRIDGE_APP_VERSION", "development")
     if WINDOWS:
         from .windows_models import hardware, default_profile
         result["hardware"] = hardware()
@@ -162,7 +163,6 @@ def status():
         available = {"standard": result["model_installed"], "precision": result["precision_installed"]}
         result["default_profile"] = preferred if available.get(preferred) else ("precision" if available["precision"] else "standard")
         result["managed_models"] = bool(marker.get("models_managed_separately")) if isinstance(marker, dict) else False
-        result["app_version"] = os.environ.get("PAPERBRIDGE_APP_VERSION", "development")
     return result
 
 

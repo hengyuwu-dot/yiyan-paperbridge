@@ -6,7 +6,7 @@
 
 Mac 与 Windows 都提供 **一键安装向导**：选择 4B 或 14B 后自动准备完整环境，装好即可离线翻译。Mac 的模型与应用独立保存，后续更新继续使用已安装模型。
 
-**[Mac 一键安装](https://ghfast.top/https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.3-macos/Yiyan-Mac-OneClick-Setup.dmg) · [Windows 一键安装](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
+**[Mac 一键安装](https://ghfast.top/https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.3-macos/Yiyan-Mac-OneClick-Setup.dmg) · [Windows 一键安装](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.9.0-windows-update/Yiyan-Windows-OneClick-Setup.exe)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
 
 ![译研 Mac 论文工作室](docs/images/workspace.jpg)
 
@@ -88,7 +88,7 @@ light curve = 光变曲线
 
 ![Windows 一键安装：选择 4B 或 14B](docs/images/windows-setup.png)
 
-**[下载 Windows 一键安装器](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)** · [安装与使用教程](docs/WINDOWS_INSTALL.md)
+**[下载 Windows 一键安装器](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.9.0-windows-update/Yiyan-Windows-OneClick-Setup.exe)** · [安装与使用教程](docs/WINDOWS_INSTALL.md)
 
 1. 双击打开 **Yiyan-Windows-OneClick-Setup.exe**。
 2. 选择 **4B 标准版**或 **14B 精译版**，点击 **下载并安装**。
@@ -109,6 +109,8 @@ light curve = 光变曲线
 两种模型都支持 CPU，显存要求用于完整 GPU 加速。配置按 Q4_K_M、8192 上下文、单任务预留开销；同时安装两种模型留 40GB 空间。更多选择方法见 Windows 教程。
 
 需要为离线电脑准备安装文件时，也可下载 [4B 完整离线包](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-4b-offline)或 [14B 完整离线包](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-14b-offline)。
+
+**已有模型，更新无需重新下载。** Windows 菜单 **软件 → 检查更新**获取后续版本；应用更新包保留模型、论文、译稿和设置。旧版首次升级可运行新版一键安装器，选择原安装位置。详见 [Windows 更新发布说明](docs/WINDOWS_RELEASE_MAINTENANCE.md)。
 
 ## 开源与许可
 

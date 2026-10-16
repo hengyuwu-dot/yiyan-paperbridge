@@ -1,0 +1,149 @@
+name: Build and verify Windows model-preserving updates
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/windows-update.yml, release-assets/windows-version.json]
+permissions:
+  contents: read
+concurrency:
+  group: windows-model-preserving-update
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-dotnet@v5
+        with: {dotnet-version: '8.0.x'}
+      - uses: actions/setup-python@v6
+        with: {python-version: '3.12'}
+      - name: Verify download and atomic model-preserving update contracts
+        run: |
+          dotnet run --project desktop/windows-setup-tests/Tests.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Downloader checks failed' }
+          dotnet run --project desktop/windows-update-tests/Tests.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Update checks failed' }
+      - name: Build app-only package, self-contained updater and one-click setup
+        run: |
+          python -m pip install PyMuPDF==1.27.2.3
+          python scripts/publish_windows_update.py build
+      - name: Capture actual Windows selection screens
+        shell: pwsh
+        run: |
+          $p=Start-Process dist/windows-update/Yiyan-Windows-OneClick-Setup.exe -ArgumentList '--preview-smoke C:\WindowsUpdatePreview' -PassThru
+          if (-not $p.WaitForExit(120000) -or $p.ExitCode -ne 0) { throw 'Setup preview failed' }
+          New-Item -ItemType Directory -Path dist/windows-update/screenshots -Force | Out-Null
+          Copy-Item C:/WindowsUpdatePreview/*.png dist/windows-update/screenshots/
+      - name: Publish candidate without changing the stable update channel
+        env: {GITHUB_TOKEN: '${{ github.token }}'}
+        run: python scripts/publish_windows_update.py candidate
+      - uses: actions/upload-artifact@v6
+        with:
+          name: Windows-update-tools
+          path: |
+            dist/windows-update/Yiyan-Windows-OneClick-Setup.exe
+            dist/windows-update/TestLauncher/Yiyan.exe
+  validate:
+    needs: build
+    runs-on: windows-2022
+    timeout-minutes: 75
+    env:
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PAPERBRIDGE_HOME: 'C:\WindowsUpdateEvidence\AppData'
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v6
+        with: {python-version: '3.12'}
+      - uses: actions/download-artifact@v6
+        with: {name: Windows-update-tools, path: .cache/update-tools}
+      - name: Install 4B with the actual one-click button and latest candidate app
+        shell: pwsh
+        run: |
+          $v=(Get-Content release-assets/windows-version.json -Raw|ConvertFrom-Json).version
+          $env:PAPERBRIDGE_WINDOWS_TEST_MANIFEST="https://github.com/$env:GITHUB_REPOSITORY/releases/download/v$v-windows-update/windows-app.json"
+          [Environment]::SetEnvironmentVariable('PAPERBRIDGE_WINDOWS_TEST_MANIFEST',$env:PAPERBRIDGE_WINDOWS_TEST_MANIFEST,'Process')
+          "PAPERBRIDGE_WINDOWS_TEST_MANIFEST=$env:PAPERBRIDGE_WINDOWS_TEST_MANIFEST" >> $env:GITHUB_ENV
+          $exe=(Get-ChildItem .cache/update-tools -Recurse -Filter Yiyan-Windows-OneClick-Setup.exe|Select-Object -First 1).FullName
+          $p=Start-Process $exe -ArgumentList '--install-smoke standard --evidence C:\WindowsUpdateEvidence\Initial --destination "C:\PaperBridge升级验证\译研" --cache C:\WindowsUpdateCache' -PassThru
+          $deadline=(Get-Date).AddMinutes(55)
+          while (-not $p.WaitForExit(30000)) {
+            if(Test-Path C:/WindowsUpdateEvidence/Initial/setup-progress.json){Get-Content C:/WindowsUpdateEvidence/Initial/setup-progress.json}
+            if((Get-Date) -gt  $deadline){$p.Kill($true);throw 'Initial installation timed out'}
+          }
+          if($p.ExitCode -ne  0){Get-ChildItem C:/WindowsUpdateEvidence -Recurse -Filter '*REPORT.json'|ForEach-Object{Get-Content $_};throw 'Fresh one-click installation failed'}
+          $r=Get-Content C:/WindowsUpdateEvidence/Initial/SETUP-REPORT.json -Raw|ConvertFrom-Json
+          if(-not $r.application_update_complete -or $r.version -ne  $v){throw 'Latest app did not follow base model installation'}
+      - name: Save real model and paper baseline and install controlled older launcher
+        shell: pwsh
+        run: |
+          python scripts/verify_windows_update.py before --bundle 'C:\PaperBridge升级验证\译研' --data C:\WindowsUpdateEvidence\AppData --evidence C:\WindowsUpdateEvidence
+          if($LASTEXITCODE -ne  0){throw 'Baseline verification failed'}
+          $test=(Get-ChildItem .cache/update-tools -Recurse -Filter Yiyan.exe|Select-Object -First 1).FullName
+          Copy-Item $test 'C:\PaperBridge升级验证\译研\Yiyan.exe' -Force
+      - name: Trigger the real in-app update menu and wait for the updater
+        shell: pwsh
+        run: |
+          $p=Start-Process 'C:\PaperBridge升级验证\译研\Yiyan.exe' -ArgumentList '--update-smoke' -PassThru
+          if(-not $p.WaitForExit(300000) -or  $p.ExitCode -ne  0){throw 'Native update menu failed'}
+          $launch=Get-Content C:/WindowsUpdateEvidence/AppData/windows-update-launch.json -Raw|ConvertFrom-Json
+          $updater=Get-Process -Id $launch.helper_pid -ErrorAction SilentlyContinue
+          if($updater -and  -not $updater.WaitForExit(600000)){$updater.Kill($true);throw 'App update timed out'}
+          $r=Get-Content C:/WindowsUpdateEvidence/AppData/UpdateEvidence/WINDOWS-UPDATE-REPORT.json -Raw|ConvertFrom-Json
+          if($r.status -ne  'complete' -or  $r.models_downloaded){throw 'Application update failed or downloaded a model'}
+      - name: Deny external app traffic and verify updated native window offline
+        shell: pwsh
+        run: |
+          foreach($exe in @('Yiyan.exe','Runtime/Python/python.exe','Runtime/llama/cpu/llama-server.exe','Runtime/llama/cuda/llama-server.exe','Runtime/WebView2/msedgewebview2.exe')) {
+            New-NetFirewallRule -DisplayName "PaperBridge update offline $exe" -Direction Outbound -Action Block -Program (Join-Path 'C:\PaperBridge升级验证\译研' $exe)|Out-Null
+          }
+          $p=Start-Process 'C:\PaperBridge升级验证\译研\Yiyan.exe' -ArgumentList '--smoke-test' -PassThru
+          if(-not $p.WaitForExit(300000) -or  $p.ExitCode -ne  0){throw 'Updated application failed offline startup'}
+          python scripts/verify_windows_update.py after --bundle 'C:\PaperBridge升级验证\译研' --data C:\WindowsUpdateEvidence\AppData --evidence C:\WindowsUpdateEvidence
+          if($LASTEXITCODE -ne  0){throw 'Preservation checks failed'}
+      - name: Verify actual offline PDF export with the updated app and original 4B model
+        run: python scripts/smoke_windows_offline.py standard --bundle 'C:\PaperBridge升级验证\译研' --data C:\WindowsUpdateEvidence\PDF
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: Windows-update-validation
+          path: |
+            C:/WindowsUpdateEvidence/*.json
+            C:/WindowsUpdateEvidence/AppData/*.json
+            C:/WindowsUpdateEvidence/AppData/*.png
+            C:/WindowsUpdateEvidence/AppData/*.log
+            C:/WindowsUpdateEvidence/AppData/UpdateEvidence/*
+            C:/WindowsUpdateEvidence/Initial/*.json
+            C:/WindowsUpdateEvidence/Initial/*.log
+            C:/WindowsUpdateEvidence/Initial/ApplicationUpdate/*
+            C:/WindowsUpdateEvidence/PDF/WINDOWS-OFFLINE-SMOKE-REPORT.json
+            C:/WindowsUpdateEvidence/PDF/smoke.log
+          if-no-files-found: warn
+  publish:
+    needs: [build, validate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with: {persist-credentials: false}
+      - uses: actions/download-artifact@v6
+        with: {name: Windows-update-validation, path: validation}
+      - name: Promote verified release and update the Windows version endpoint
+        env: {GITHUB_TOKEN: '${{ github.token }}'}
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+          root=Path('validation')
+          for name in ['WINDOWS-UPDATE-PRESERVATION.json','WINDOWS-OFFLINE-SMOKE-REPORT.json']:
+              source=next(root.rglob(name));target=root/name
+              if source!=target: shutil.copy2(source,target)
+          PY
+          python3 scripts/publish_windows_update.py promote

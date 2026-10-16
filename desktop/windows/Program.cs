@@ -4,6 +4,8 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using PaperBridgeUpdate;
+using System.Reflection;
 
 internal static class Program
 {
@@ -11,7 +13,7 @@ internal static class Program
     static void Main(string[] args)
     {
         ApplicationConfiguration.Initialize();
-        Application.Run(new PaperWindow(args.Contains("--smoke-test")));
+        Application.Run(new PaperWindow(args.Contains("--smoke-test"),args.Contains("--update-smoke")));
     }
 }
 
@@ -24,14 +26,18 @@ internal sealed class PaperWindow : Form
     readonly HttpClient http = new(new HttpClientHandler { UseProxy = false }) { Timeout = TimeSpan.FromSeconds(3) };
     readonly StringBuilder log = new();
     readonly bool smoke;
+    readonly bool updateSmoke;
+    readonly ToolStripMenuItem updateMenu=new("检查更新…"){Enabled=false};
+    bool checkingUpdate,updateStarted;
     Process? server;
     string stateFile = "";
     string origin = "";
     bool closing;
 
-    public PaperWindow(bool smokeTest)
+    public PaperWindow(bool smokeTest,bool updateTest=false)
     {
         smoke = smokeTest;
+        updateSmoke=updateTest;
         Text = "译研 · SCI 论文翻译";
         Size = new Size(1380, 920);
         MinimumSize = new Size(960, 680);
@@ -40,6 +46,8 @@ internal sealed class PaperWindow : Form
         var icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!);
         if (icon != null) Icon = icon;
         Controls.Add(view); Controls.Add(loading);
+        var menu=new MenuStrip();var software=new ToolStripMenuItem("软件");software.DropDownItems.Add(updateMenu);menu.Items.Add(software);
+        updateMenu.Click+=async(_,_)=>await CheckUpdate();Controls.Add(menu);MainMenuStrip=menu;menu.BringToFront();
         Shown += async (_, _) => await StartStudio();
         FormClosing += async (_, e) => {
             if (closing) return;
@@ -68,6 +76,7 @@ internal sealed class PaperWindow : Form
                 RedirectStandardOutput = true, RedirectStandardError = true, StandardOutputEncoding = Encoding.UTF8, StandardErrorEncoding = Encoding.UTF8 };
             foreach (string arg in new[] { "-X", "utf8", "-m", "paperbridge.windows_bootstrap", "--parent-pid", Environment.ProcessId.ToString(), "--state-file", stateFile }) start.ArgumentList.Add(arg);
             start.Environment["PAPERBRIDGE_HOME"] = data;
+            start.Environment["PAPERBRIDGE_APP_VERSION"] = AppVersion;
             start.Environment["PAPERBRIDGE_LLAMA_DIR"] = Path.Combine(root, "Runtime", "llama");
             start.Environment["PAPERBRIDGE_WINDOWS_BUNDLE"] = root;
             start.Environment["PYTHONUTF8"] = "1";
@@ -99,7 +108,7 @@ internal sealed class PaperWindow : Form
             if (origin.Length == 0) throw new Exception("启动等待超时，请关闭后重新打开译研。");
             var environment = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: browserFolder, userDataFolder: Path.Combine(data, "WebView2"));
             await view.EnsureCoreWebView2Async(environment);
-            view.CoreWebView2.Settings.UserAgent += " PaperBridgeDesktop/1.5 Windows";
+            view.CoreWebView2.Settings.UserAgent += " PaperBridgeDesktop/"+AppVersion+" Windows";
             view.CoreWebView2.Settings.AreDevToolsEnabled = false;
             view.CoreWebView2.NavigationStarting += (_, e) => {
                 if (Uri.TryCreate(e.Uri, UriKind.Absolute, out var uri) && uri.GetLeftPart(UriPartial.Authority) == origin) return;
@@ -118,6 +127,8 @@ internal sealed class PaperWindow : Form
             view.CoreWebView2.NavigationCompleted += async (_, e) => {
                 if (!e.IsSuccess) return;
                 loading.Visible = false;
+                updateMenu.Enabled=true;
+                if(updateSmoke&&!updateStarted){updateStarted=true;updateMenu.PerformClick();return;}
                 if (smoke) {
                     await Task.Delay(1500);
                     using var capture = File.Create(Path.Combine(data, "windows-ui-smoke.png"));
@@ -153,5 +164,26 @@ internal sealed class PaperWindow : Form
         catch (InvalidOperationException) { }
         catch (System.ComponentModel.Win32Exception) { }
         try { if (stateFile.Length > 0) File.Delete(stateFile); } catch (IOException) { }
+    }
+    static string AppVersion {get{var v=Assembly.GetExecutingAssembly().GetName().Version!;return $"{v.Major}.{v.Minor}.{v.Build}";}}
+    async Task CheckUpdate()
+    {
+        if(checkingUpdate||origin.Length==0)return;checkingUpdate=true;updateMenu.Enabled=false;
+        try {
+            using var state=JsonDocument.Parse(await http.GetStringAsync(origin+"/api/desktop/status"));
+            if(state.RootElement.GetProperty("busy").GetBoolean()){MessageBox.Show("请等待论文处理完成后再更新，已经保存的内容会保留。","论文正在处理");return;}
+            using var network=UpdateNetwork.Client();var release=await UpdateNetwork.Latest(network,testManifest:updateSmoke?Environment.GetEnvironmentVariable("PAPERBRIDGE_WINDOWS_TEST_MANIFEST"):null);
+            if(!release.NewerThan(AppVersion)){if(!updateSmoke)MessageBox.Show("译研 "+AppVersion+" 已是最新版本。","检查更新");else throw new IOException("Update smoke needs a newer published version");return;}
+            if(!updateSmoke&&MessageBox.Show("发现译研 "+release.Version+"。\n\n本次只下载应用更新，保留已有 4B / 14B 模型、论文、译稿与设置。","软件更新",MessageBoxButtons.OKCancel,MessageBoxIcon.Information)!=DialogResult.OK)return;
+            string helper=Path.Combine(data,"Updater",Guid.NewGuid().ToString("N"),"Yiyan-Updater.exe");Directory.CreateDirectory(Path.GetDirectoryName(helper)!);
+            File.Copy(Path.Combine(AppContext.BaseDirectory,"Updater","Yiyan-Updater.exe"),helper);
+            var start=new ProcessStartInfo(helper){UseShellExecute=false};
+            foreach(string arg in new[]{"--destination",AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar),"--data",data,"--parent-pid",Environment.ProcessId.ToString()})start.ArgumentList.Add(arg);
+            if(updateSmoke){foreach(string arg in new[]{"--update-smoke","--no-launch","--evidence",Path.Combine(data,"UpdateEvidence")})start.ArgumentList.Add(arg);}
+            using var child=Process.Start(start)??throw new IOException("更新向导未能启动，请稍后重试。");
+            if(updateSmoke)await File.WriteAllTextAsync(Path.Combine(data,"windows-update-launch.json"),JsonSerializer.Serialize(new{source="native_menu",helper_pid=child.Id,version=release.Version}));
+            closing=true;StopServer();Close();
+        }catch(Exception e){if(updateSmoke){Environment.ExitCode=1;await File.WriteAllTextAsync(Path.Combine(data,"windows-update-error.log"),e.ToString());closing=true;StopServer();Close();}else MessageBox.Show(e.Message,"暂时无法检查更新",MessageBoxButtons.OK,MessageBoxIcon.Information);}
+        finally{checkingUpdate=false;if(!IsDisposed)updateMenu.Enabled=true;}
     }
 }
