@@ -6,7 +6,7 @@
 
 Mac 与 Windows 都提供 **一键安装向导**：选择 4B 或 14B 后自动准备完整环境，装好即可离线翻译。Mac 的模型与应用独立保存，后续更新继续使用已安装模型。
 
-**[Mac 一键安装](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.3-macos/Yiyan-Mac-OneClick-Setup.dmg) · [Windows 一键安装](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
+**[Mac 一键安装](https://ghfast.top/https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.3-macos/Yiyan-Mac-OneClick-Setup.dmg) · [Windows 一键安装](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.7.0-windows-setup/Yiyan-Windows-OneClick-Setup.exe)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
 
 ![译研 Mac 论文工作室](docs/images/workspace.jpg)
 
@@ -45,7 +45,7 @@ Mac 与 Windows 都提供 **一键安装向导**：选择 4B 或 14B 后自动�
 
 ## 安装到 Mac：选择模型，一键准备
 
-**[下载 Mac 一键安装器（约 1.6MB）](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.3-macos/Yiyan-Mac-OneClick-Setup.dmg)** · [安装与更新教程](docs/MAC_INSTALL.md)
+**[下载 Mac 一键安装器（约 1.3MB）](https://ghfast.top/https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.3-macos/Yiyan-Mac-OneClick-Setup.dmg)** · [GitHub 原始下载](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.3-macos/Yiyan-Mac-OneClick-Setup.dmg) · [安装与更新教程](docs/MAC_INSTALL.md)
 
 ![Mac 一键安装器：4B / 14B 自选](docs/images/macos-setup.png)
 
