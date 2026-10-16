@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "version": "1.9.0",
+  "platform": "windows-x64",
+  "archive": {
+    "name": "Yiyan-1.9.0-Windows-x64-App.zip",
+    "bytes": 136125962,
+    "sha256": "9de8bd8f98ef5b2381b70279e6842f232c2338ccec345af1ca6d649529aa1a87",
+    "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.9.0-windows-update/Yiyan-1.9.0-Windows-x64-App.zip"
+  },
+  "components": [
+    "BUILD-REPORT.json",
+    "Engine",
+    "Microsoft.Web.WebView2.Core.xml",
+    "Microsoft.Web.WebView2.WinForms.xml",
+    "Microsoft.Web.WebView2.Wpf.xml",
+    "Updater",
+    "Windows-\u5b89\u88c5\u6559\u7a0b.md",
+    "Yiyan.exe",
+    "Yiyan.pdb"
+  ],
+  "expanded_bytes": 151018765,
+  "minimum_installed_version": "1.5.0",
+  "runtime_included": false
+}
