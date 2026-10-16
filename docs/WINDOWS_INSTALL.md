@@ -14,6 +14,8 @@
 
 后续版本与接口维护见 [Windows 更新发布说明](WINDOWS_RELEASE_MAINTENANCE.md)。
 
+![Windows 应用更新向导：保留本地模型](images/windows-update.png)
+
 ## 1. 选择适合电脑的模型
 
 | 配置 | 4B 标准 | 14B 精译 |

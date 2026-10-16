@@ -4,7 +4,7 @@
 
 译研是一款面向 SCI 论文阅读的桌面应用，将英文科研 PDF 翻译成自然、专业的中文，把全文翻译、专业术语、中英对照和 PDF 导出放进一个简洁的论文工作室。
 
-Mac 与 Windows 都提供 **一键安装向导**：选择 4B 或 14B 后自动准备完整环境，装好即可离线翻译。Mac 的模型与应用独立保存，后续更新继续使用已安装模型。
+Mac 与 Windows 都提供 **一键安装向导**：选择 4B 或 14B 后自动准备完整环境，装好即可离线翻译。Mac 与 Windows 后续更新都继续使用已安装模型，论文、译稿与设置也会保留。
 
 **[Mac 一键安装](https://ghfast.top/https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.3-macos/Yiyan-Mac-OneClick-Setup.dmg) · [Windows 一键安装](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.9.0-windows-update/Yiyan-Windows-OneClick-Setup.exe)** · **[Mac 安装教程](docs/MAC_INSTALL.md) · [Windows 安装教程](docs/WINDOWS_INSTALL.md)** · **[使用方法](#开始阅读)**
 
@@ -111,6 +111,8 @@ light curve = 光变曲线
 需要为离线电脑准备安装文件时，也可下载 [4B 完整离线包](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-4b-offline)或 [14B 完整离线包](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/tag/v1.6.0-windows-14b-offline)。
 
 **已有模型，更新无需重新下载。** Windows 菜单 **软件 → 检查更新**获取后续版本；应用更新包保留模型、论文、译稿和设置。旧版首次升级可运行新版一键安装器，选择原安装位置。详见 [Windows 更新发布说明](docs/WINDOWS_RELEASE_MAINTENANCE.md)。
+
+![Windows 应用更新：继续使用已安装模型](docs/images/windows-update.png)
 
 ## 开源与许可
 
