@@ -73,9 +73,16 @@ def candidate():
     common.require_runner();r=find_release()
     if r and not r['draft']:raise RuntimeError('Published releases are immutable')
     if not r:r=common.api(f'/repos/{common.REPO}/releases',{'tag_name':TAG,'target_commitish':os.environ['GITHUB_SHA'],'name':'译研 · Windows 一键安装与应用更新 · 4B / 14B','body':'<!-- windows-update: '+TAG+' -->','draft':True,'prerelease':True})
-    for p in [*OUT.glob('*.*'),*OUT.glob('screenshots/*.png')]:common.upload(r['id'],p)
-    body=(ROOT/'docs/RELEASE_WINDOWS_UPDATE.md').read_text().replace('{VERSION}',VERSION)
-    common.api(f"/repos/{common.REPO}/releases/{r['id']}",{'tag_name':TAG,'draft':False,'prerelease':True,'make_latest':'false','body':body},method='PATCH')
+    for p in [*OUT.glob('*.*'),*OUT.glob('screenshots/*.png')]:
+        # Only an unpublished draft can replace failed-build assets. Public
+        # candidates are immutable and must use a new version for any fix.
+        for asset in common.api(f"/repos/{common.REPO}/releases/{r['id']}/assets?per_page=100"):
+            if asset['name']==p.name and (asset.get('digest')!='sha256:'+digest(p) or asset['size']!=p.stat().st_size):
+                try:common.api(f"/repos/{common.REPO}/releases/assets/{asset['id']}",method='DELETE')
+                except json.JSONDecodeError:pass  # Successful deletion returns 204 with no JSON body.
+        common.upload(r['id'],p)
+    body=(ROOT/'docs/RELEASE_WINDOWS_UPDATE.md').read_text(encoding='utf-8').replace('{VERSION}',VERSION)
+    common.api(f"/repos/{common.REPO}/releases/{r['id']}",{'tag_name':TAG,'target_commitish':os.environ['GITHUB_SHA'],'draft':False,'prerelease':True,'make_latest':'false','body':body},method='PATCH')
 
 def promote():
     common.require_runner();r=find_release();assert r and not r['draft']

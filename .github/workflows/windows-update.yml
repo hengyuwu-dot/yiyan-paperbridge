@@ -7,6 +7,9 @@ on:
     paths: [.github/workflows/windows-update.yml, release-assets/windows-version.json]
 permissions:
   contents: read
+env:
+  PYTHONUTF8: '1'
+  PYTHONDONTWRITEBYTECODE: '1'
 concurrency:
   group: windows-model-preserving-update
   cancel-in-progress: false
