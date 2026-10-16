@@ -242,23 +242,20 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
     }
     func lookupUpdate() {
         guard let resources = Bundle.main.resourceURL else { return }
-        let channel = URL(string: "https://raw.githubusercontent.com/hengyuwu-dot/yiyan-paperbridge/main/release-assets/macos-update.json")!
-        let session = URLSession(configuration: .ephemeral)
-        session.dataTask(with: channel) { data, response, error in
-            guard (response as? HTTPURLResponse)?.statusCode == 200,
-                  let data = data, let feed = try? JSONSerialization.jsonObject(with: data) as? [String:Any], feed["schema"] as? Int == 1,
-                  let text = feed["manifest_url"] as? String,
-                  text.hasPrefix("https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/"), let url = URL(string:text) else {
-                DispatchQueue.main.async { self.alert("暂时无法检查更新", "请连接网络后重试。已安装的版本可以继续离线使用。") }; return
+        DispatchQueue.global(qos:.userInitiated).async {
+            let process=Process()
+            process.executableURL=resources.appendingPathComponent("Updater.app/Contents/MacOS/YiyanSetup")
+            process.arguments=["--check-update"]
+            let output=Pipe();process.standardOutput=output;process.standardError=FileHandle.nullDevice
+            do {try process.run()} catch {DispatchQueue.main.async {self.alert("暂时无法检查更新","请稍后重试。")};return}
+            let data=output.fileHandleForReading.readDataToEndOfFile();process.waitUntilExit()
+            guard process.terminationStatus==0,data.count<=2_000_000,
+                  let release=try? JSONSerialization.jsonObject(with:data) as? [String:Any],
+                  release["schema"] as? Int==1,let version=release["version"] as? String,
+                  version.range(of:"^\\d+\\.\\d+\\.\\d+$",options:.regularExpression) != nil else {
+                DispatchQueue.main.async {self.alert("暂时无法检查更新","请连接网络后重试。已安装的版本可以继续离线使用。")};return
             }
-            session.dataTask(with:url) { body, response, _ in
-                guard (response as? HTTPURLResponse)?.statusCode == 200, let body = body,
-                      let release = try? JSONSerialization.jsonObject(with:body) as? [String:Any],
-                      release["schema"] as? Int == 1, let version = release["version"] as? String,
-                      version.range(of:"^\\d+\\.\\d+\\.\\d+$",options:.regularExpression) != nil else {
-                    DispatchQueue.main.async {self.alert("暂时无法检查更新","请稍后重试。")}; return
-                }
-                DispatchQueue.main.async {
+            DispatchQueue.main.async {
                     let current = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
                     guard version.compare(current,options:.numeric) == .orderedDescending else {self.alert("已是最新版本", "译研 \(current) · 本地模型将继续保留。");return}
                     let prompt = NSAlert();prompt.messageText = "发现译研 \(version)";prompt.informativeText = "更新只下载应用与运行环境，保留已安装模型、论文和设置。";prompt.addButton(withTitle:"下载并更新");prompt.addButton(withTitle:"稍后")
@@ -271,9 +268,8 @@ final class PaperBridgeApp: NSObject, NSApplicationDelegate, NSWindowDelegate, W
                         let config = NSWorkspace.OpenConfiguration();config.createsNewApplicationInstance = true;config.arguments = ["--update","--destination",Bundle.main.bundleURL.path,"--data",self.root.path]
                         NSWorkspace.shared.openApplication(at:helper,configuration:config) { _,error in DispatchQueue.main.async {if let error=error {self.alert("更新未能启动",error.localizedDescription)}else{NSApp.terminate(nil)}} }
                     } catch {self.alert("更新未能启动",error.localizedDescription)}
-                }
-            }.resume()
-        }.resume()
+            }
+        }
     }
     func captureSmoke() {
         DispatchQueue.main.asyncAfter(deadline:.now()+1) {

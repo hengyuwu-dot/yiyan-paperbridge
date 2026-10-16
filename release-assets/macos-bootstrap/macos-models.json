@@ -1,0 +1,164 @@
+{
+  "schema": 1,
+  "editions": {
+    "standard": {
+      "directory": "qwen3-4b",
+      "snapshot": {
+        "repo": "Qwen/Qwen3-4B-MLX-4bit",
+        "revision": "52a5ab34fa604bc8af6d3ce0cac0cab10b7eb495",
+        "files": [
+          {
+            "file": "LICENSE",
+            "size": 11343,
+            "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e"
+          },
+          {
+            "file": "README.md",
+            "size": 14708,
+            "sha256": "a3ac01d2a1fff2f02be25e1d2e9160f03db51dbee2cc17f13b774f646648adf9"
+          },
+          {
+            "file": "config.json",
+            "size": 988,
+            "sha256": "76eae114d67a444c7296be7a6bc0409ecc15c340e113f1bac7572cb7d0928b6f"
+          },
+          {
+            "file": "merges.txt",
+            "size": 1671853,
+            "sha256": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5"
+          },
+          {
+            "file": "model.safetensors",
+            "size": 2137326367,
+            "sha256": "e56a94b846a2dce7d1cc154ce58b9cfc4b8d99e8ffb74bfe256a265f4cbc7fb9"
+          },
+          {
+            "file": "model.safetensors.index.json",
+            "size": 63924,
+            "sha256": "278844a566da15beab6e9068c57f606c50a99c440d4515206b871a8b5282b3de"
+          },
+          {
+            "file": "tokenizer.json",
+            "size": 11422654,
+            "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+          },
+          {
+            "file": "tokenizer_config.json",
+            "size": 9732,
+            "sha256": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101"
+          },
+          {
+            "file": "vocab.json",
+            "size": 2776833,
+            "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+          }
+        ]
+      },
+      "parts": [
+        {
+          "name": "qwen3-4b.tar.part001",
+          "bytes": 1887436800,
+          "sha256": "d9994ea4d5088ce17373390c90174801694bed7effb2a7a75622c4a903cfd54b",
+          "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.0-macos-models/qwen3-4b.tar.part001"
+        },
+        {
+          "name": "qwen3-4b.tar.part002",
+          "bytes": 265891840,
+          "sha256": "e692c5035a9c2b5789c0a1a8b4b3535f62b87d485bce3c03dc5cb33b6bee69a2",
+          "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.0-macos-models/qwen3-4b.tar.part002"
+        }
+      ]
+    },
+    "precision": {
+      "directory": "qwen3-14b",
+      "snapshot": {
+        "repo": "Qwen/Qwen3-14B-MLX-4bit",
+        "revision": "ba63a5141812f9870287df53341123a71ba41433",
+        "files": [
+          {
+            "file": "LICENSE",
+            "size": 11343,
+            "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e"
+          },
+          {
+            "file": "README.md",
+            "size": 14749,
+            "sha256": "1c8d2f8b86dd7bdbea2056ac9becf3372f30a6a99babfe5f7d24c859e8bbebf2"
+          },
+          {
+            "file": "config.json",
+            "size": 941,
+            "sha256": "b2b3caeb0beef3a231730ec846241585b64c7c88b99dba427450f6a9f2a04214"
+          },
+          {
+            "file": "merges.txt",
+            "size": 1671853,
+            "sha256": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5"
+          },
+          {
+            "file": "model-00001-of-00002.safetensors",
+            "size": 5360593224,
+            "sha256": "f2f502ca7604ad6789b124bf9cd7a192fda5a60e6f52b1fe521c3aa4dad598ce"
+          },
+          {
+            "file": "model-00002-of-00002.safetensors",
+            "size": 2485808912,
+            "sha256": "d3758e05e08bcfb5fcd1b76d74758366355c80464398702051ce0388045e898e"
+          },
+          {
+            "file": "model.safetensors.index.json",
+            "size": 86266,
+            "sha256": "4825c397a7eb6ddde3827310ced22cdc3f6d1c2d5ca393e111bdcd9ad5601b05"
+          },
+          {
+            "file": "tokenizer.json",
+            "size": 11422654,
+            "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+          },
+          {
+            "file": "tokenizer_config.json",
+            "size": 9690,
+            "sha256": "f45a828b27bfe1ae2080246d6de51c29370a0978f15b3299123830d5ba9e08a1"
+          },
+          {
+            "file": "vocab.json",
+            "size": 2776833,
+            "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+          }
+        ]
+      },
+      "parts": [
+        {
+          "name": "qwen3-14b.tar.part001",
+          "bytes": 1887436800,
+          "sha256": "e99379aded644fa1d06c232f4b56f90defd74da0eafaab21f4a5e400b35bc792",
+          "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.0-macos-models/qwen3-14b.tar.part001"
+        },
+        {
+          "name": "qwen3-14b.tar.part002",
+          "bytes": 1887436800,
+          "sha256": "95293d868c186c6b92b5859bf35da7a667b13612e3435b9114ef82b2f51ebcc2",
+          "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.0-macos-models/qwen3-14b.tar.part002"
+        },
+        {
+          "name": "qwen3-14b.tar.part003",
+          "bytes": 1887436800,
+          "sha256": "af93014a827cd029f30134194ed28f57b0d6c5f2c69848e23c62fee3f93675f6",
+          "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.0-macos-models/qwen3-14b.tar.part003"
+        },
+        {
+          "name": "qwen3-14b.tar.part004",
+          "bytes": 1887436800,
+          "sha256": "7b127d4a1bba77127de718e3948d4cbac7570e18aa88aa078f069a931bcfb121",
+          "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.0-macos-models/qwen3-14b.tar.part004"
+        },
+        {
+          "name": "qwen3-14b.tar.part005",
+          "bytes": 312678400,
+          "sha256": "4c800949172b400e8aa08efc6ca548ba03505049654dbe93b355fe73ed54d268",
+          "url": "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.0-macos-models/qwen3-14b.tar.part005"
+        }
+      ]
+    }
+  }
+}

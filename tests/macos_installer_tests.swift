@@ -4,6 +4,7 @@ import CryptoKit
 final class TransportFixture: URLProtocol {
     static var body=Data((0..<2097152).map{UInt8($0%251)})
     static var requests:[Int]=[]
+    static var hosts:[String]=[]
     static var mode="resume"
     override class func canInit(with request:URLRequest)->Bool {true}
     override class func canonicalRequest(for request:URLRequest)->URLRequest {request}
@@ -11,6 +12,7 @@ final class TransportFixture: URLProtocol {
         let header=request.value(forHTTPHeaderField:"Range") ?? "bytes=0-"
         let start=Int(header.replacingOccurrences(of:"bytes=",with:"").replacingOccurrences(of:"-",with:""))!
         Self.requests.append(start)
+        Self.hosts.append(request.url!.host!)
         let call=Self.requests.count
         let ignore=Self.mode=="ignore"
         let beginning=ignore ? 0:start
@@ -18,11 +20,11 @@ final class TransportFixture: URLProtocol {
         let fields=["Content-Length":String(Self.body.count-beginning),"Content-Range":range]
         let response=HTTPURLResponse(url:request.url!,statusCode:!ignore && start>0 ? 206:200,httpVersion:"HTTP/1.1",headerFields:fields)!
         client?.urlProtocol(self,didReceive:response,cacheStoragePolicy:.notAllowed)
-        if Self.mode=="interrupt" && call==1 {
+        if (Self.mode=="interrupt" || Self.mode=="switch") && call==1 {
             client?.urlProtocol(self,didLoad:Self.body.prefix(160))
             client?.urlProtocolDidFinishLoading(self);return
         }
-        if Self.mode=="pause" && call==1 {
+        if (Self.mode=="pause" || Self.mode=="slow") && call==1 {
             client?.urlProtocol(self,didLoad:Self.body.prefix(160));return
         }
         var content=Self.body.subdata(in:beginning..<Self.body.count)
@@ -35,7 +37,7 @@ func fixtureConfiguration()->URLSessionConfiguration {let c=URLSessionConfigurat
 func check(_ condition:@autoclosure()->Bool,_ message:String) {if !condition(){fatalError(message)}}
 func testDirectory(_ name:String)throws->URL {let p=URL(fileURLWithPath:NSTemporaryDirectory()).appendingPathComponent("yiyan-installer-tests-"+UUID().uuidString+"/"+name);try FileManager.default.createDirectory(at:p,withIntermediateDirectories:true);return p}
 func asset()->RemoteAsset {let h=SHA256.hash(data:TransportFixture.body).map{String(format:"%02x",$0)}.joined();return RemoteAsset(name:"sample.bin",url:repositoryPrefix+"test/sample.bin",sha256:h,bytes:Int64(TransportFixture.body.count))}
-func reset(_ mode:String) {TransportFixture.requests=[];TransportFixture.mode=mode}
+func reset(_ mode:String) {TransportFixture.requests=[];TransportFixture.hosts=[];TransportFixture.mode=mode}
 @main struct Tests {
     static func main()throws {
         setbuf(stdout,nil)
@@ -87,6 +89,33 @@ func reset(_ mode:String) {TransportFixture.requests=[];TransportFixture.mode=mo
         check(versionIsNewer("1.10.0","1.9.0"),"numeric version comparison failed")
         check(!versionIsNewer("1.8.0","1.8.0"),"same version counted as update")
         print("PASS semantic version order")
-        print("8 installer checks passed")
+        let proxy=installerNetworkConfiguration().connectionProxyDictionary!
+        for key in ["HTTPEnable","HTTPSEnable","SOCKSEnable","ProxyAutoConfigEnable","ProxyAutoDiscoveryEnable"] {check((proxy[key] as? Int)==0,"proxy inherited: "+key)}
+        print("PASS installer sessions disable proxy inheritance locally")
+        do {
+            reset("switch");let dir=try testDirectory("switch");defer{try? FileManager.default.removeItem(at:dir.deletingLastPathComponent())}
+            let result=try ResumableTransfer().download(sample,into:dir){_ in}
+            check(TransportFixture.requests==[0,160],"source switch lost partial")
+            check(TransportFixture.hosts==["github.com","ghfast.top"],"failure did not use a different route")
+            check(try! Data(contentsOf:result)==TransportFixture.body,"cross-source resume changed bytes")
+            print("PASS fallback source resumes verified canonical asset bytes")
+        }
+        do {
+            reset("slow");let dir=try testDirectory("slow");defer{try? FileManager.default.removeItem(at:dir.deletingLastPathComponent())}
+            try TransportFixture.body.prefix(160).write(to:dir.appendingPathComponent("sample.bin.partial"))
+            let result=try ResumableTransfer(slowInterval:0.5).download(sample,into:dir){_ in}
+            check(TransportFixture.requests==[160,160],"slow route not resumed: \(TransportFixture.requests)")
+            check(TransportFixture.hosts==["github.com","ghfast.top"],"slow connection not switched")
+            check(try! Data(contentsOf:result)==TransportFixture.body,"slow retry corrupted content")
+            print("PASS low throughput switches route without discarding saved bytes")
+        }
+        check(installerMetadataURLs(publishedMacManifest).map{$0.host!}==["raw.githubusercontent.com","cdn.jsdelivr.net"],"CDN metadata mapping changed")
+        check(installerMetadataURLs(sample.url).count==1,"binary metadata silently delegated to an untrusted index")
+        print("PASS update metadata uses canonical repository and public CDN")
+        let text=downloadProgressText(bytes:100_000_000,total:200_000_000,speed:1_000_000)
+        check(text.contains("1.0 MB/s") && text.contains("2 分钟"),"rate/ETA display failed")
+        check(downloadProgressText(bytes:160,total:200_000_000,speed:0).contains("正在连接"),"resumed cached bytes fabricated a speed")
+        print("PASS live rate and remaining-time formatting")
+        print("13 installer checks passed")
     }
 }

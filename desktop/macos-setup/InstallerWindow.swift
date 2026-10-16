@@ -12,6 +12,7 @@ final class MacInstallerWindow: NSObject, NSWindowDelegate {
     let location=NSTextField(labelWithString:"")
     let status=NSTextField(wrappingLabelWithString:"准备就绪")
     let detail=NSTextField(wrappingLabelWithString:"首次安装需要联网，装好后直接离线用。")
+    let route=NSTextField(wrappingLabelWithString:"独立直连 · 自动切换备用线路 · 保持系统代理设置不变")
     let progress=NSProgressIndicator()
     let start=NSButton(title:"下载并安装 4B",target:nil,action:nil)
     let pause=NSButton(title:"暂停下载",target:nil,action:nil)
@@ -28,6 +29,7 @@ final class MacInstallerWindow: NSObject, NSWindowDelegate {
     let evidence:URL?
     let preview:URL?
     var started=Date(),lastProgress=Date.distantPast
+    var rateDate:Date?,rateBytes:Int64=0,smoothedRate:Double=0
     init(arguments:[String]=CommandLine.arguments) {
         func option(_ key:String)->String? {guard let i=arguments.firstIndex(of:key),i+1<arguments.count else{return nil};return arguments[i+1]}
         updateOnly=arguments.contains("--update")
@@ -49,7 +51,7 @@ final class MacInstallerWindow: NSObject, NSWindowDelegate {
     }
     func makeWindow() {
         let green=NSColor(calibratedRed:0.16,green:0.40,blue:0.31,alpha:1)
-        window=NSWindow(contentRect:NSRect(x:0,y:0,width:760,height:700),styleMask:[.titled,.closable,.miniaturizable],backing:.buffered,defer:false)
+        window=NSWindow(contentRect:NSRect(x:0,y:0,width:760,height:740),styleMask:[.titled,.closable,.miniaturizable],backing:.buffered,defer:false)
         window.appearance=NSAppearance(named:.aqua)
         window.contentView=InstallerBackground(frame:window.contentView!.bounds)
         window.title=updateOnly ? "译研 · 更新软件":"译研 · 一键下载安装";window.delegate=self;window.isReleasedWhenClosed=false
@@ -76,14 +78,15 @@ final class MacInstallerWindow: NSObject, NSWindowDelegate {
         let options=NSStackView(views:[clean,launch]);options.spacing=24
         status.font = .systemFont(ofSize:15,weight:.medium);status.textColor=green
         detail.textColor = .secondaryLabelColor;detail.font = .systemFont(ofSize:12)
+        route.textColor = .secondaryLabelColor;route.font = .systemFont(ofSize:11)
         progress.isIndeterminate=false;progress.minValue=0;progress.maxValue=1;progress.style = .bar
         progress.widthAnchor.constraint(equalToConstant:688).isActive=true
         pause.target=self;pause.action=#selector(pauseDownload);pause.isEnabled=false
         start.target=self;start.action=#selector(beginInstall);start.bezelStyle = .rounded;start.keyEquivalent="\r";start.contentTintColor=green
         let spacer=NSView();let actions=NSStackView(views:[spacer,pause,start]);spacer.setContentHuggingPriority(.defaultLow,for:.horizontal);actions.spacing=12
-        let footer=NSTextField(labelWithString:"译研 PaperBridge · 安装向导 1.8 · 首次安装联网，之后离线使用")
+        let footer=NSTextField(labelWithString:"译研 PaperBridge · 安装向导 1.8.3 · 首次安装联网，之后离线使用")
         footer.font = .systemFont(ofSize:11);footer.textColor = .secondaryLabelColor
-        let stack=NSStackView(views:[title,subtitle,choices,hint,pathTitle,pathRow,options,status,detail,progress,actions,footer]);stack.orientation = .vertical;stack.alignment = .leading;stack.spacing=16;stack.translatesAutoresizingMaskIntoConstraints=false
+        let stack=NSStackView(views:[title,subtitle,choices,hint,pathTitle,pathRow,options,status,detail,route,progress,actions,footer]);stack.orientation = .vertical;stack.alignment = .leading;stack.spacing=16;stack.translatesAutoresizingMaskIntoConstraints=false
         window.contentView!.addSubview(stack)
         NSLayoutConstraint.activate([stack.topAnchor.constraint(equalTo:window.contentView!.topAnchor,constant:30),stack.leadingAnchor.constraint(equalTo:window.contentView!.leadingAnchor,constant:36),stack.trailingAnchor.constraint(equalTo:window.contentView!.trailingAnchor,constant:-36),pathRow.widthAnchor.constraint(equalTo:stack.widthAnchor),actions.widthAnchor.constraint(equalTo:stack.widthAnchor)])
         if updateOnly {standard.isEnabled=false;precision.isEnabled=false;start.title="检查并更新应用";detail.stringValue="模型独立保存，本次只下载应用。"}
@@ -98,9 +101,24 @@ final class MacInstallerWindow: NSObject, NSWindowDelegate {
     @objc func beginInstall() {
         if finished {NSWorkspace.shared.open(destination);return}
         guard !working else{return};working=true;committing=false;enable(false);start.isEnabled=false;pause.isEnabled=true;started=Date()
-        let runner=MacInstallation();job=runner
+        let runner=MacInstallation();job=runner;rateDate=nil;smoothedRate=0
+        runner.transfer.routeChanged={message in DispatchQueue.main.async{self.route.stringValue=message;self.rateDate=nil;self.smoothedRate=0}}
         runner.stageChanged={text in DispatchQueue.main.async{self.status.stringValue=text;self.writeState(["status":"working","stage":text])}}
-        runner.progress={bytes,total in DispatchQueue.main.async{self.progress.doubleValue=Double(bytes)/Double(total);if Date().timeIntervalSince(self.lastProgress)>0.25 {self.detail.stringValue=String(format:"%.2f / %.2f GB · %.0f%%",Double(bytes)/1e9,Double(total)/1e9,100*Double(bytes)/Double(total));self.lastProgress=Date();self.writeState(["status":"downloading","bytes":bytes,"total_bytes":total])}}}
+        runner.progress={bytes,total in DispatchQueue.main.async {
+            self.progress.doubleValue=Double(bytes)/Double(total)
+            let now=Date()
+            if self.rateDate==nil || bytes<self.rateBytes {self.rateDate=now;self.rateBytes=bytes;self.smoothedRate=0}
+            if now.timeIntervalSince(self.lastProgress)>0.25 {
+                let interval=now.timeIntervalSince(self.rateDate!)
+                if interval>=1 {
+                    let sample=Double(max(0,bytes-self.rateBytes))/interval
+                    self.smoothedRate=self.smoothedRate==0 ? sample:0.3*sample+0.7*self.smoothedRate
+                    self.rateDate=now;self.rateBytes=bytes
+                }
+                self.detail.stringValue=downloadProgressText(bytes:bytes,total:total,speed:self.smoothedRate)
+                self.lastProgress=now;self.writeState(["status":"downloading","bytes":bytes,"total_bytes":total,"bytes_per_second":self.smoothedRate,"route":self.route.stringValue])
+            }
+        }}
         runner.applicationCommitStarted={DispatchQueue.main.async{self.committing=true;self.pause.isEnabled=false;self.progress.isIndeterminate=true;self.progress.startAnimation(nil);self.detail.stringValue="正在安装与校验，请保持向导打开。"}}
         let selected=profile, target=destination, data=dataHome, cacheFolder=cache, shouldClean=clean.state == .on, shouldOpen=launch.state == .on
         DispatchQueue.global(qos:.userInitiated).async {

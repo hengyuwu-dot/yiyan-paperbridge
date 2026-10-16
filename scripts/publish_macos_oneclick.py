@@ -87,6 +87,7 @@ def build_app():
     for name in ('macos-version.json','macos-update.json'):
         shutil.copy2(ROOT/'release-assets'/name,source/'release-assets'/name)
     shutil.copytree(ROOT/'release-assets/model-snapshots',source/'release-assets/model-snapshots')
+    shutil.copytree(ROOT/'release-assets/macos-bootstrap',source/'release-assets/macos-bootstrap')
     package.archive_tree(source,ROOT/'dist/release'/f'PaperBridge-{VERSION}-Source.zip',f'PaperBridge-{VERSION}')
     shutil.copy2(ROOT/'dist/release'/f'PaperBridge-{VERSION}-Source.zip',resources/'ApplicationSource.zip')
     # No weights are stored inside the app. Runtime, layout assets and licenses remain bundled.
@@ -96,10 +97,10 @@ def build_app():
     out=ROOT/'dist/macos-oneclick';out.mkdir(parents=True,exist_ok=True)
     archive=out/f'Yiyan-{VERSION}-AppleSilicon-App.tar.gz'
     with tarfile.open(archive,'w:gz',compresslevel=3,dereference=False) as a:a.add(APP,arcname='译研.app')
-    helper=out/'Installer/安装译研.app';build_installer(helper)
-    subprocess.run(['hdiutil','create','-volname','译研一键安装','-srcfolder',str(helper.parent),'-format','UDZO','-ov',str(out/'Yiyan-Mac-OneClick-Setup.dmg')],check=True)
     manifest={'schema':1,'version':VERSION,'minimum_macos':CONFIG['minimum_macos'],'architecture':'arm64','app':{'name':archive.name,'bytes':archive.stat().st_size,'sha256':common.sha(archive),'url':BASE+TAG+'/'+archive.name},'models_url':BASE+MODEL_TAG+'/macos-models.json'}
     (out/'macos-app.json').write_text(json.dumps(manifest,indent=2)+'\n')
+    helper=out/'Installer/安装译研.app';build_installer(helper,release_manifest=out/'macos-app.json')
+    subprocess.run(['hdiutil','create','-volname','译研一键安装','-srcfolder',str(helper.parent),'-format','UDZO','-ov',str(out/'Yiyan-Mac-OneClick-Setup.dmg')],check=True)
     # Capture both real model-selection states and verify first startup of the model-free app.
     subprocess.run([str(helper/'Contents/MacOS/YiyanSetup'),'--preview-smoke',str(out/'screenshots')],check=True,timeout=90)
     env={**os.environ,'PAPERBRIDGE_DATA_HOME':str(ROOT/'.cache/macos-first-launch')}
@@ -142,6 +143,15 @@ def promote_app():
     archive=records[manifest['app']['name']]
     assert archive['digest']=='sha256:'+manifest['app']['sha256'] and archive['size']==manifest['app']['bytes']
     channel={'schema':1,'manifest_url':BASE+TAG+'/macos-app.json'}
+    # Small app metadata is also available through the repository's public CDN.
+    # Anonymous acceleration gateways carry only SHA-verified binary assets.
+    endpoint=f'/repos/{common.REPO}/contents/release-assets/macos-app.json'
+    try: old_manifest=common.api(endpoint+'?ref=main')
+    except Exception: old_manifest=None
+    if old_manifest is None or json.loads(base64.b64decode(old_manifest['content']))!=manifest:
+        update={'message':'Publish direct Mac manifest '+VERSION,'content':base64.b64encode((json.dumps(manifest,indent=2)+'\n').encode()).decode(),'branch':'main'}
+        if old_manifest: update['sha']=old_manifest['sha']
+        common.api(endpoint,update,method='PUT')
     old=common.api(f'/repos/{common.REPO}/contents/release-assets/macos-update.json?ref=main')
     if json.loads(base64.b64decode(old['content'])) != channel:
         common.api(f'/repos/{common.REPO}/contents/release-assets/macos-update.json',{'message':'Publish Mac application update '+VERSION,'content':base64.b64encode((json.dumps(channel,indent=2)+'\n').encode()).decode(),'sha':old['sha'],'branch':'main'},method='PUT')

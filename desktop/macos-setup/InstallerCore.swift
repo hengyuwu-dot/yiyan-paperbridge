@@ -55,28 +55,43 @@ struct ModelCatalog: Codable {
 let repositoryPrefix = "https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/"
 func trustedURL(_ value: String) throws {
     guard let url=URL(string:value), url.scheme == "https", url.user == nil, url.password == nil,
-          value.hasPrefix(repositoryPrefix) || value == "https://raw.githubusercontent.com/hengyuwu-dot/yiyan-paperbridge/main/release-assets/macos-update.json" else { throw SetupFailure.message("下载地址不属于译研的发布仓库。") }
+          value.hasPrefix(repositoryPrefix) || value == publishedMacManifest || value == "https://raw.githubusercontent.com/hengyuwu-dot/yiyan-paperbridge/main/release-assets/macos-update.json" else { throw SetupFailure.message("下载地址不属于译研的发布仓库。") }
 }
 func fetchJSON<T: Decodable>(_ url: String, as: T.Type) throws -> T {
     try trustedURL(url)
-    var data: Data?, failure: Error?
-    let done=DispatchSemaphore(value:0)
-    let config=URLSessionConfiguration.ephemeral;config.timeoutIntervalForRequest=45
-    let session=URLSession(configuration:config)
-    session.dataTask(with:URL(string:url)!) { body,response,error in
-        if let http=response as? HTTPURLResponse, http.statusCode == 200, let body=body, body.count <= 2_000_000 { data=body }
-        else { failure=error ?? SetupFailure.message("暂时无法取得版本信息，请检查网络后重试。") }
-        done.signal()
-    }.resume()
-    done.wait(); session.finishTasksAndInvalidate()
-    if let failure=failure { throw failure }
-    return try JSONDecoder().decode(T.self,from:data!)
+    var last:Error=SetupFailure.message("暂时无法取得版本信息，请检查网络后重试。")
+    for address in installerMetadataURLs(url) {
+        var data:Data?,failure:Error?
+        let done=DispatchSemaphore(value:0)
+        let config=installerNetworkConfiguration();config.timeoutIntervalForRequest=8;config.timeoutIntervalForResource=12
+        let session=URLSession(configuration:config)
+        session.dataTask(with:address) { body,response,error in
+            if let http=response as? HTTPURLResponse,http.statusCode==200,let body=body,body.count<=2_000_000 {data=body}
+            else {failure=error ?? last}
+            done.signal()
+        }.resume()
+        done.wait();session.finishTasksAndInvalidate()
+        do {if let failure=failure {throw failure};return try JSONDecoder().decode(T.self,from:data!)} catch {last=error}
+    }
+    throw last
 }
 struct UpdateChannel: Decodable { let schema:Int;let manifest_url:String }
-func latestRelease() throws -> AppRelease {
+func latestRelease(allowBundled:Bool=true) throws -> AppRelease {
+    // The standalone DMG carries its release manifest, so first installation does
+    // not depend on access to raw.githubusercontent.com or a mutable mirror index.
+    if allowBundled,let path=Bundle.main.url(forResource:"BootstrapRelease",withExtension:"json") {
+        let release=try JSONDecoder().decode(AppRelease.self,from:Data(contentsOf:path));try release.validate();return release
+    }
+    if let release:AppRelease=try? fetchJSON(publishedMacManifest,as:AppRelease.self) {try release.validate();return release}
     let channel:UpdateChannel=try fetchJSON("https://raw.githubusercontent.com/hengyuwu-dot/yiyan-paperbridge/main/release-assets/macos-update.json",as:UpdateChannel.self)
     guard channel.schema == 1 else { throw SetupFailure.message("请下载新版安装向导。") }
     let release:AppRelease=try fetchJSON(channel.manifest_url,as:AppRelease.self);try release.validate();return release
+}
+func modelCatalog(_ url:String) throws -> ModelCatalog {
+    if let path=Bundle.main.url(forResource:"BootstrapModels",withExtension:"json") {
+        let catalog=try JSONDecoder().decode(ModelCatalog.self,from:Data(contentsOf:path));try catalog.validate();return catalog
+    }
+    let catalog:ModelCatalog=try fetchJSON(url,as:ModelCatalog.self);try catalog.validate();return catalog
 }
 func fileSHA(_ url:URL) throws -> String {
     let handle=try FileHandle(forReadingFrom:url);defer{try? handle.close()}
@@ -93,7 +108,14 @@ final class ResumableTransfer: NSObject, URLSessionDataDelegate {
     private var cancelled=false
     private var output:FileHandle?, result:Error?, done:DispatchSemaphore?
     private var expected:Int64=0, received:Int64=0, offset:Int64=0
+    private var attemptBytes:Int64=0
     private var progress:((Int64)->Void)?
+    var routeChanged:((String)->Void)?
+    var networkObserved:((Bool)->Void)?
+    private var preferredRoute=0
+    private let routes:[DownloadRoute]
+    private let slowInterval:Double
+    init(routes:[DownloadRoute]=installerDownloadRoutes(),slowInterval:Double=20) {self.routes=routes;self.slowInterval=slowInterval;super.init()}
     func pause() { lock.lock();cancelled=true;let task=current;lock.unlock();task?.cancel() }
     func check() throws { lock.lock();let paused=cancelled;lock.unlock();if paused {throw SetupFailure.paused} }
     func download(_ asset:RemoteAsset, into folder:URL, progress:@escaping(Int64)->Void) throws -> URL {
@@ -101,7 +123,7 @@ final class ResumableTransfer: NSObject, URLSessionDataDelegate {
         let final=folder.appendingPathComponent(asset.name), partial=folder.appendingPathComponent(asset.name+".partial")
         if fileBytes(final) == asset.bytes, try fileSHA(final) == asset.sha256 { progress(asset.bytes);return final }
         try? FileManager.default.removeItem(at:final)
-        for attempt in 0..<4 {
+        for attempt in 0..<max(4,routes.count*2) {
             try check()
             do {
                 if fileBytes(partial)>asset.bytes {try FileManager.default.removeItem(at:partial)}
@@ -110,27 +132,42 @@ final class ResumableTransfer: NSObject, URLSessionDataDelegate {
                     try FileManager.default.removeItem(at:partial)
                 }
                 if !FileManager.default.fileExists(atPath:partial.path) {FileManager.default.createFile(atPath:partial.path,contents:nil)}
-                offset=fileBytes(partial);received=offset;expected=asset.bytes;self.progress=progress;result=nil
+                offset=fileBytes(partial);received=offset;expected=asset.bytes;attemptBytes=0;self.progress=progress;result=nil
                 output=try FileHandle(forWritingTo:partial);try output!.seekToEnd();done=DispatchSemaphore(value:0)
-                var request=URLRequest(url:URL(string:asset.url)!);request.timeoutInterval=90
+                let route=routes[(preferredRoute+attempt)%routes.count]
+                routeChanged?(route.name+" · 独立直连，不使用系统代理")
+                var request=URLRequest(url:route.url(asset.url));request.timeoutInterval=15
                 if offset>0 {request.setValue("bytes=\(offset)-",forHTTPHeaderField:"Range")}
-                let config=URLSessionConfiguration.ephemeral;config.timeoutIntervalForResource=24*3600
+                let config=installerNetworkConfiguration()
                 let queue=OperationQueue();queue.maxConcurrentOperationCount=1
                 let session=URLSession(configuration:config,delegate:self,delegateQueue:queue)
                 let task=session.dataTask(with:request)
                 lock.lock();current=task;let paused=cancelled;lock.unlock()
                 if paused {try? output?.close();session.invalidateAndCancel();throw SetupFailure.paused}
-                progress(offset);task.resume();done!.wait();session.finishTasksAndInvalidate()
+                let windowStart=Date()
+                let monitor=DispatchSource.makeTimerSource(queue:DispatchQueue.global())
+                monitor.schedule(deadline:.now()+slowInterval,repeating:slowInterval)
+                monitor.setEventHandler { [weak self] in queue.addOperation {
+                    guard let self=self else{return}
+                    self.lock.lock();let active=self.current === task;self.lock.unlock()
+                    guard active,attempt<self.routes.count else{return}
+                    let elapsed=Date().timeIntervalSince(windowStart)
+                    if Double(self.attemptBytes)/max(0.01,elapsed)<256*1024 {
+                        self.result=SetupFailure.message("当前线路较慢，正在切换线路并续传…");task.cancel()
+                    }
+                }}
+                progress(offset);task.resume();monitor.resume();done!.wait();monitor.cancel();session.finishTasksAndInvalidate()
                 try? output?.close();output=nil
                 try check();if let error=result {throw error}
                 guard received==asset.bytes else {throw SetupFailure.message("网络中断，正在继续下载。")}
                 guard try fileSHA(partial)==asset.sha256 else {try? FileManager.default.removeItem(at:partial);throw SetupFailure.message("文件校验未通过，正在重新下载。")}
-                try FileManager.default.moveItem(at:partial,to:final);progress(asset.bytes);return final
+                try FileManager.default.moveItem(at:partial,to:final);preferredRoute=(preferredRoute+attempt)%routes.count;progress(asset.bytes);return final
             } catch {
                 try? output?.close();output=nil
                 try check()
-                if attempt==3 {throw error}
-                for _ in 0..<(2*(attempt+1)*10) {try check();Thread.sleep(forTimeInterval:0.1)}
+                if attempt==max(4,routes.count*2)-1 {throw error}
+                routeChanged?("线路暂时较慢或不可用，正在自动切换并续传…")
+                for _ in 0..<10 {try check();Thread.sleep(forTimeInterval:0.1)}
             }
         }
         throw SetupFailure.message("下载未完成，请重试。")
@@ -149,10 +186,13 @@ final class ResumableTransfer: NSObject, URLSessionDataDelegate {
     func urlSession(_ session:URLSession,dataTask:URLSessionDataTask,didReceive data:Data) {
         do {
             guard received+Int64(data.count)<=expected else {throw SetupFailure.message("下载文件大小与清单不符。")}
-            try output?.write(contentsOf:data);received+=Int64(data.count);progress?(received)
+            try output?.write(contentsOf:data);received+=Int64(data.count);attemptBytes+=Int64(data.count);progress?(received)
         } catch {result=error;dataTask.cancel()}
     }
     func urlSession(_ session:URLSession,task:URLSessionTask,didCompleteWithError error:Error?) {if result==nil {result=error};lock.lock();current=nil;lock.unlock();done?.signal()}
+    func urlSession(_ session:URLSession,task:URLSessionTask,didFinishCollecting metrics:URLSessionTaskMetrics) {
+        for transaction in metrics.transactionMetrics {networkObserved?(transaction.isProxyConnection)}
+    }
 }
 
 func runArchive(_ files:[URL], arguments:[String]) throws -> Data {
@@ -222,10 +262,10 @@ final class MacInstallation {
         defer{flock(descriptor,LOCK_UN);close(descriptor)}
         guard flock(descriptor,LOCK_EX|LOCK_NB)==0 else {throw SetupFailure.message("另一个安装向导正在工作，请稍后重试。")}
         stageChanged?("正在获取软件和模型版本…")
-        let release=try latestRelease()
+        let release=try latestRelease(allowBundled:!updateOnly)
         let os=ProcessInfo.processInfo.operatingSystemVersion
         guard !versionIsNewer(release.minimum_macos,"\(os.majorVersion).\(os.minorVersion).\(os.patchVersion)") else {throw SetupFailure.message("此版本需要 macOS \(release.minimum_macos) 或更新系统。")}
-        let catalog:ModelCatalog=try fetchJSON(release.models_url,as:ModelCatalog.self);try catalog.validate()
+        let catalog=try modelCatalog(release.models_url)
         let edition=catalog.editions[profile]!
         try fm.createDirectory(at:dataHome.appendingPathComponent("models"),withIntermediateDirectories:true)
         stageChanged?("正在检查本地模型，已安装的内容会保留…")

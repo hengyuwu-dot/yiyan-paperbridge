@@ -1,6 +1,6 @@
 # 译研 Mac 安装与更新教程
 
-**[下载 Mac 一键安装器](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.2-macos/Yiyan-Mac-OneClick-Setup.dmg)** · [软件首页](../README.md)
+**[下载 Mac 一键安装器](https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.3-macos/Yiyan-Mac-OneClick-Setup.dmg)** · [备用加速下载](https://ghfast.top/https://github.com/hengyuwu-dot/yiyan-paperbridge/releases/download/v1.8.3-macos/Yiyan-Mac-OneClick-Setup.dmg) · [软件首页](../README.md)
 
 打开安装器，选择 4B 或 14B，点击“下载并安装”。应用、所选模型、字体和排版环境会自动装好，之后可直接离线使用。
 
@@ -26,6 +26,8 @@
 3. 选择 **4B 标准版**或 **14B 精译版**，按需更改安装位置。
 4. 点击 **下载并安装**。向导自动下载、校验并安装全部内容。
 5. 出现“安装完成”后打开 **译研**，导入论文即可翻译。
+
+安装器自行直连网络，无需配置本机代理，也不会修改系统代理设置。GitHub 直连较慢或中断时，自动切换备用加速线路并续传；下载完成后核对文件大小和 SHA256。界面显示当前线路、实时速度与预计剩余时间。
 
 下载可以暂停，之后点击继续或重新打开安装器即可续传；网络中断会自动重试。默认勾选“装好后清理下载缓存”和“安装完成后打开译研”。
 
@@ -67,3 +69,7 @@
 | 需要增加另一模型 | 打开安装器选择另一模型，或从软件的模型窗口下载 |
 | 想检查存储和清理缓存 | 在工作室右上角打开“内存 / 存储” |
 | 暂时无法检查更新 | 联网后重试；已装好的版本可以继续离线翻译 |
+
+## 下载服务
+
+应用和模型托管在 GitHub，由 GitHub 或公共加速通道分发；下载不连接开发者的个人电脑。备用线路由 ghfast.top、gh-proxy.com 提供，只传输公开安装资源。版本清单通过项目仓库及 jsDelivr 公共 CDN 获取，安装器内置本版安装清单与固定模型校验值。论文继续在本机处理。

@@ -9,16 +9,21 @@ import subprocess
 ROOT=Path(__file__).resolve().parents[1]
 
 
-def build(output, dmg=None):
+def build(output, dmg=None, release_manifest=None):
     output=Path(output)
     resources=output/'Contents/Resources';binary=output/'Contents/MacOS'
     resources.mkdir(parents=True,exist_ok=True);binary.mkdir(parents=True,exist_ok=True)
     cache=ROOT/'.cache/macos-setup-build';cache.mkdir(parents=True,exist_ok=True)
-    subprocess.run(['xcrun','swiftc','-swift-version','5','-O','-target','arm64-apple-macosx12.0','-module-cache-path',str(cache/'modules'),'-framework','AppKit','-framework','CryptoKit',*[str(ROOT/'desktop/macos-setup'/n) for n in ('InstallerCore.swift','InstallerWindow.swift','main.swift')],'-o',str(binary/'YiyanSetup')],check=True)
+    subprocess.run(['xcrun','swiftc','-swift-version','5','-O','-target','arm64-apple-macosx12.0','-module-cache-path',str(cache/'modules'),'-framework','AppKit','-framework','CryptoKit',*[str(ROOT/'desktop/macos-setup'/n) for n in ('DownloadNetwork.swift','InstallerCore.swift','InstallerWindow.swift','main.swift')],'-o',str(binary/'YiyanSetup')],check=True)
+    shutil.copy2(ROOT/'release-assets/macos-bootstrap/macos-models.json',resources/'BootstrapModels.json')
+    if release_manifest:
+        shutil.copy2(release_manifest,resources/'BootstrapRelease.json')
+    else:
+        (resources/'BootstrapRelease.json').unlink(missing_ok=True)
     icon=ROOT/'desktop/macos/AppIcon.icns'
     if not icon.is_file(): icon=ROOT/'dist/译研.app/Contents/Resources/AppIcon.icns'
     shutil.copy2(icon,resources/'AppIcon.icns')
-    (output/'Contents/Info.plist').write_bytes(plistlib.dumps({'CFBundleName':'安装译研','CFBundleDisplayName':'安装译研','CFBundleIdentifier':'org.paperbridge.yiyan.installer','CFBundleExecutable':'YiyanSetup','CFBundlePackageType':'APPL','CFBundleShortVersionString':'1.8.0','CFBundleVersion':'180','CFBundleIconFile':'AppIcon','LSMinimumSystemVersion':'12.0','NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication'}))
+    (output/'Contents/Info.plist').write_bytes(plistlib.dumps({'CFBundleName':'安装译研','CFBundleDisplayName':'安装译研','CFBundleIdentifier':'org.paperbridge.yiyan.installer','CFBundleExecutable':'YiyanSetup','CFBundlePackageType':'APPL','CFBundleShortVersionString':'1.8.3','CFBundleVersion':'183','CFBundleIconFile':'AppIcon','LSMinimumSystemVersion':'12.0','NSHighResolutionCapable':True,'NSPrincipalClass':'NSApplication'}))
     subprocess.run(['codesign','--force','--deep','--sign','-',str(output)],check=True)
     subprocess.run(['codesign','--verify','--deep','--strict',str(output)],check=True)
     if dmg:
