@@ -7,5 +7,7 @@
   <ItemGroup>
     <Compile Include="../windows-setup/Download.cs" Link="Download.cs" />
     <EmbeddedResource Include="../windows-setup/UiFont.ttf" LogicalName="PaperBridgeUpdate.UiFont.ttf" />
+    <EmbeddedResource Include="../windows-setup/LICENSES.txt" LogicalName="PaperBridgeUpdate.LICENSES.txt" />
+    <EmbeddedResource Include="../../LICENSE" LogicalName="PaperBridgeUpdate.LICENSE.txt" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 name: Build and verify Windows model-preserving updates
+# Validates the published WebView2 SDK sidecars alongside the self-contained launcher.
 on:
   workflow_dispatch:
   push:

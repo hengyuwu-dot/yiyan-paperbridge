@@ -47,7 +47,8 @@ def build():
         if not runtime or not Path(runtime).is_dir():raise RuntimeError('Provide a verified runtime source for include_runtime=true')
         copy(Path(runtime),APP/'Runtime')
     components=sorted(p.name for p in APP.iterdir());allowed={'Engine','Updater','Runtime','Yiyan.exe','Yiyan.pdb','Yiyan.dll','Yiyan.deps.json','Yiyan.runtimeconfig.json','WebView2Loader.dll','Microsoft.Web.WebView2.Core.dll','Microsoft.Web.WebView2.WinForms.dll','Microsoft.Web.WebView2.Wpf.dll','Windows-安装教程.md','BUILD-REPORT.json'}
-    assert set(components)<=allowed
+    allowed.update({'Microsoft.Web.WebView2.Core.xml','Microsoft.Web.WebView2.WinForms.xml','Microsoft.Web.WebView2.Wpf.xml'})
+    assert set(components)<=allowed, 'Unexpected application components: '+repr(sorted(set(components)-allowed))
     archive=OUT/f'Yiyan-{VERSION}-Windows-x64-App.zip';expanded=0
     with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=6,allowZip64=True) as z:
         for p in sorted(APP.rglob('*')):

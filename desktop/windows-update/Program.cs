@@ -30,6 +30,7 @@ internal sealed class UpdateWindow:Form
         Font=new Font(fonts.Families[0],11);Text="译研 · 软件更新";ClientSize=new Size(700,370);StartPosition=FormStartPosition.CenterScreen;
         BackColor=Color.FromArgb(248,250,247);ForeColor=Color.FromArgb(28,55,47);Icon=Icon.ExtractAssociatedIcon(Environment.ProcessPath!);
         var content=new Panel(){Dock=DockStyle.Fill,Padding=new Padding(28)};Controls.Add(content);
+        var license=new LinkLabel(){Text="开源许可",Dock=DockStyle.Bottom,Height=26,LinkColor=ForeColor};license.LinkClicked+=(_,_)=>ShowLicenses();content.Controls.Add(license);
         var actions=new FlowLayoutPanel(){Dock=DockStyle.Bottom,Height=52,FlowDirection=FlowDirection.RightToLeft};actions.Controls.Add(start);actions.Controls.Add(pause);content.Controls.Add(actions);
         var note=new Label(){Text="只更新应用；4B / 14B 模型、论文、译稿和设置继续保留。",Dock=DockStyle.Top,Height=58};
         content.Controls.Add(progress);content.Controls.Add(detail);content.Controls.Add(status);content.Controls.Add(note);
@@ -76,6 +77,11 @@ internal sealed class UpdateWindow:Form
         finally{working=committing=false;start.Enabled=true;pause.Enabled=false;cancellation.Dispose();cancellation=null;if(smoke||closeAfter||automatic&&complete)Close();}
     }
     void Open(){try{var p=new ProcessStartInfo(Path.Combine(target,"Yiyan.exe")){UseShellExecute=false};p.Environment["PAPERBRIDGE_HOME"]=data;Process.Start(p);}catch(Exception e){detail.Text=e.Message;}}
+    void ShowLicenses(){
+        string Read(string name){using var stream=typeof(UpdateWindow).Assembly.GetManifestResourceStream("PaperBridgeUpdate."+name)!;using var reader=new StreamReader(stream);return reader.ReadToEnd();}
+        using var form=new Form(){Text="译研 · 开源许可",Size=new Size(780,600),StartPosition=FormStartPosition.CenterParent};
+        form.Controls.Add(new TextBox(){Text=Read("LICENSES.txt")+"\r\n\r\n"+Read("LICENSE.txt"),Multiline=true,ReadOnly=true,ScrollBars=ScrollBars.Both,Dock=DockStyle.Fill,Font=new Font("Consolas",10)});form.ShowDialog(this);
+    }
     void Record(object value){if(evidence is null)return;Directory.CreateDirectory(evidence);File.WriteAllText(Path.Combine(evidence,"WINDOWS-UPDATE-REPORT.json"),JsonSerializer.Serialize(value,AppRelease.Json));}
     void CaptureEvidence(string file){if(evidence is null)return;Directory.CreateDirectory(evidence);using var bitmap=new Bitmap(Width,Height);DrawToBitmap(bitmap,new Rectangle(0,0,Width,Height));bitmap.Save(Path.Combine(evidence,file));}
 }

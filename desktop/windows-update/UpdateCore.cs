@@ -16,6 +16,7 @@ public sealed record AppRelease(int Schema, string Version, string Platform, Ass
     public static readonly HashSet<string> AllowedComponents = new(StringComparer.OrdinalIgnoreCase) {
         "Engine", "Updater", "Runtime", "Yiyan.exe", "Yiyan.dll", "Yiyan.pdb", "Yiyan.deps.json", "Yiyan.runtimeconfig.json",
         "WebView2Loader.dll", "Microsoft.Web.WebView2.Core.dll", "Microsoft.Web.WebView2.WinForms.dll", "Microsoft.Web.WebView2.Wpf.dll",
+        "Microsoft.Web.WebView2.Core.xml", "Microsoft.Web.WebView2.WinForms.xml", "Microsoft.Web.WebView2.Wpf.xml",
         "Windows-安装教程.md", "BUILD-REPORT.json"
     };
     public void Validate()
