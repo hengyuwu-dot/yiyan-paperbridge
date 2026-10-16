@@ -1,5 +1,5 @@
 name: Build Mac one-click installer and independent updates
-# Keep normal WebKit callbacks running while verifying a clean application exit.
+# Verify the modern per-session direct policy without changing system settings.
 on:
   workflow_dispatch:
   push:

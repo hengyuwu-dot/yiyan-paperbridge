@@ -91,6 +91,10 @@ func reset(_ mode:String) {TransportFixture.requests=[];TransportFixture.hosts=[
         print("PASS semantic version order")
         let proxy=installerNetworkConfiguration().connectionProxyDictionary!
         for key in ["HTTPEnable","HTTPSEnable","SOCKSEnable","ProxyAutoConfigEnable","ProxyAutoDiscoveryEnable"] {check((proxy[key] as? Int)==0,"proxy inherited: "+key)}
+        if #available(macOS 14.0,*) {
+            let policy=installerNetworkConfiguration().proxyConfigurations
+            check(policy.count==1 && policy[0].excludedDomains==["*"],"modern loading stack can fall back to the system proxy")
+        }
         print("PASS installer sessions disable proxy inheritance locally")
         do {
             reset("switch");let dir=try testDirectory("switch");defer{try? FileManager.default.removeItem(at:dir.deletingLastPathComponent())}
